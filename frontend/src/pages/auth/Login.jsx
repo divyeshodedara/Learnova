@@ -46,7 +46,8 @@ export default function Login() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1">
+        <CardHeader className="space-y-1 flex flex-col items-center">
+            <img src="/logo.svg" alt="Learnova" className="h-12 w-12 dark:invert mb-4" />
           <CardTitle className="text-2xl font-bold tracking-tight">
             Welcome back
           </CardTitle>

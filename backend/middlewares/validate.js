@@ -7,26 +7,44 @@ const validate = (schema) => (req, res, next) => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
-      // Just extract the message for simplicity
-      const errorMessages = result.error.errors.map((e) => e.message);
-      
-      // Return a flat list of messages in 'error' field if single, or 'errors' if multiple
-      const message = errorMessages.length === 1 
-        ? errorMessages[0] 
-        : errorMessages.join(", ");
+      let errorMessages = [];
+      let message = "Invalid input";
 
-      return res.status(400).json({ 
-        success: false, 
-        message: message, 
-        errors: errorMessages 
+      // Defensive check: handle cases where zod error structure varies
+      if (result.error) {
+        if (Array.isArray(result.error.errors)) {
+          errorMessages = result.error.errors.map((e) => e.message);
+        } else if (typeof result.error.flatten === "function") {
+          const flattened = result.error.flatten();
+          errorMessages = [
+            ...flattened.formErrors,
+            ...Object.values(flattened.fieldErrors).flat(),
+          ];
+        } else {
+          // Fallback
+          errorMessages = [result.error.message || "Validation failed"];
+        }
+      }
+
+      // Construct a single string message
+      if (errorMessages.length > 0) {
+        message = errorMessages.join(", ");
+      }
+
+      return res.status(400).json({
+        success: false,
+        message: message,
+        errors: errorMessages,
       });
     }
 
-    req.body = result.data; // use the parsed (and possibly transformed) data
+    req.body = result.data; // use the parsed data
     next();
   } catch (err) {
     console.error("Validation Middleware Error:", err);
-    return res.status(500).json({ success: false, message: "Internal validation error" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Internal validation error" });
   }
 };
 
