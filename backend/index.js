@@ -35,6 +35,11 @@ app.use("/api/lessons", lessonRoutes);
 app.use("/api/attachments", attachmentRoutes);
 app.use("/api/tags", tagRoutes);
 
+// Person 2 Routes
+app.use("/api", require("./routes/quiz.routes.js"));
+app.use("/api", require("./routes/reporting.routes.js"));
+app.use("/api", require("./routes/invitation.routes.js"));
+
 // ─── 404 handler ─────────────────────────────────────────
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });
