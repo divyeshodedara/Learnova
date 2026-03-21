@@ -1,9 +1,11 @@
-import dotenv from "dotenv";
+const dotenv = require("dotenv");
 // Load environment variables
 dotenv.config();
 
-import express from "express";
-import cors from "cors";
+const express = require("express");
+const cors = require("cors");
+const authRoutes = require("./routes/auth.routes.js");
+const errorHandler = require("./middlewares/errorHandler.js");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -15,14 +17,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // ─── Health-check route ──────────────────────────────────
 app.get("/", (req, res) => {
-  res.json({ message: "Learnova API is running 🚀" });
+  res.json({ message: "Learnova API is running" });
 });
 
-// ─── API routes placeholder ──────────────────────────────
-// import userRoutes from "./routes/users.js";
-// import courseRoutes from "./routes/courses.js";
-// app.use("/api/users", userRoutes);
-// app.use("/api/courses", courseRoutes);
+// ─── API routes ──────────────────────────────────────────
+app.use("/api/auth", authRoutes);
 
 // ─── 404 handler ─────────────────────────────────────────
 app.use((req, res) => {
@@ -30,10 +29,7 @@ app.use((req, res) => {
 });
 
 // ─── Global error handler ────────────────────────────────
-app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ error: "Internal server error" });
-});
+app.use(errorHandler);
 
 // ─── Start server ────────────────────────────────────────
 app.listen(PORT, () => {
