@@ -1,10 +1,15 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
 import { useAuth } from "./hooks/useAuth";
+import { Toaster } from "./components/ui/sonner";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Dashboard from "./pages/Dashboard";
 import ComingSoon from "./pages/ComingSoon";
+import CoursesPage from "./pages/courses/CoursesPage";
+import CourseDetailPage from "./pages/courses/CourseDetailPage";
+import UsersPage from "./pages/admin/UsersPage";
+import ReportingPage from "./pages/reporting/ReportingPage";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
 import UserManagement from "./pages/admin/UserManagement";
@@ -42,23 +47,16 @@ function App() {
             path="/courses"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <CourseList user={user} />
+                <CoursesPage />
               </ProtectedRoute>
             }
           />
+
           <Route
-            path="/courses/:id/edit"
+            path="/courses/:id"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <CourseEditor user={user} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/courses/:id/curriculum"
-            element={
-              <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <CurriculumBuilder user={user} />
+                <CourseDetailPage />
               </ProtectedRoute>
             }
           />
@@ -67,7 +65,7 @@ function App() {
             path="/users"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN"]}>
-                <UserManagement />
+                <UsersPage />
               </ProtectedRoute>
             }
           />
@@ -76,7 +74,7 @@ function App() {
             path="/reporting"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <Reporting user={user} />
+                <ReportingPage />
               </ProtectedRoute>
             }
           />
@@ -133,6 +131,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>
+      <Toaster position="top-right" />
     </ThemeProvider>
   );
 }
