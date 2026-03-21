@@ -1,10 +1,10 @@
 const prisma = require("../lib/prisma");
-const razorpay = require("../lib/razorpay");
-const crypto = require("crypto");
+const paypal = require("../lib/paypal");
+const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 
 /**
  * POST /api/payments/create-order
- * Create Razorpay order
+ * Create PayPal order
  */
 exports.createOrder = async (req, res, next) => {
   try {
@@ -25,34 +25,41 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Already enrolled" });
     }
 
-    if (!razorpay) {
-      return res.status(500).json({ success: false, error: "Razorpay instance is not configured on the server." });
-    }
+    // Create PayPal order request
+    const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
+    request.prefer("return=representation");
+    request.requestBody({
+      intent: 'CAPTURE',
+      purchase_units: [{
+        amount: {
+          currency_code: 'USD', // Change as appropriate
+          value: Number(course.price).toFixed(2)
+        }
+      }]
+    });
 
-    const amountInPaise = Math.round(Number(course.price) * 100);
-
-    const options = {
-      amount: amountInPaise,
-      currency: "INR",
-      receipt: `receipt_${Date.now()}_${userId}`,
-    };
-
-    const order = await razorpay.orders.create(options);
+    // Execute order creation
+    const order = await paypal.client().execute(request);
 
     // Create pending payment record
     const payment = await prisma.payment.create({
       data: {
         userId,
         courseId,
-        provider: "RAZORPAY",
+        provider: "PAYPAL",
         status: "PENDING",
         amount: course.price,
-        currency: "INR",
-        providerOrderId: order.id,
+        currency: "USD",
+        providerOrderId: order.result.id,
       },
     });
 
-    res.status(201).json({ success: true, orderId: order.id, paymentId: payment.id, amount: options.amount });
+    res.status(201).json({ 
+        success: true, 
+        orderId: order.result.id, 
+        paymentId: payment.id, 
+        amount: course.price 
+    });
   } catch (error) {
     next(error);
   }
@@ -60,31 +67,17 @@ exports.createOrder = async (req, res, next) => {
 
 /**
  * POST /api/payments/verify
- * Verify Razorpay signature and create Enrollment
+ * Capture PayPal Order and create Enrollment
  */
 exports.verifyPayment = async (req, res, next) => {
   try {
-    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, courseId } = req.body;
+    const { paypal_order_id, courseId } = req.body;
     const userId = req.user.userId;
-
-    if (!process.env.RAZORPAY_KEY_SECRET) {
-      return res.status(500).json({ success: false, error: "Razorpay secret not available" });
-    }
-
-    const body = razorpay_order_id + "|" + razorpay_payment_id;
-    const expectedSignature = crypto
-      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET)
-      .update(body.toString())
-      .digest("hex");
-
-    if (expectedSignature !== razorpay_signature) {
-      return res.status(400).json({ success: false, error: "Invalid signature" });
-    }
 
     // Find payment record
     const payment = await prisma.payment.findFirst({
       where: {
-        providerOrderId: razorpay_order_id,
+        providerOrderId: paypal_order_id,
         userId,
         courseId,
       },
@@ -94,14 +87,34 @@ exports.verifyPayment = async (req, res, next) => {
       return res.status(404).json({ success: false, error: "Payment record not found" });
     }
 
+    if (payment.status === "SUCCESS") {
+         return res.status(400).json({ success: false, error: "Payment already captured" });
+    }
+
+    // Capture the PayPal Order
+    const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(paypal_order_id);
+    request.requestBody({});
+    
+    let captureResult;
+    try {
+        captureResult = await paypal.client().execute(request);
+    } catch (err) {
+        return res.status(400).json({ success: false, error: "PayPal capture failed", details: err.message });
+    }
+
+    if (captureResult.result.status !== "COMPLETED") {
+        return res.status(400).json({ success: false, error: "Payment not completed on PayPal" });
+    }
+
+    const captureId = captureResult.result.purchase_units[0].payments.captures[0].id;
+
     // Process inside transaction to be safe
     const [updatedPayment, enrollment] = await prisma.$transaction([
       prisma.payment.update({
         where: { id: payment.id },
         data: {
           status: "SUCCESS",
-          providerPaymentId: razorpay_payment_id,
-          providerSignature: razorpay_signature,
+          providerPaymentId: captureId, // Save the capture ID
         },
       }),
       prisma.enrollment.create({

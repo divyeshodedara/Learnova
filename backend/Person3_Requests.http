@@ -111,7 +111,7 @@ Authorization: Bearer {{token}}
 ### PAYMENT MODULE
 ### =========================================================================
 
-### 13. Create Razorpay/PayPal Order
+### 13. Create PayPal Order
 POST {{baseUrl}}/payments/create-order
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -121,17 +121,15 @@ Content-Type: application/json
 }
 
 
-### 14. Verify Webhook Signature -> Sets SUCCESS -> Creates Enrollment
-# You will get order_id and payment_id from Razorpay UI testing
+### 14. Capture PayPal Order -> Sets SUCCESS -> Creates Enrollment
+# You will get paypal_order_id from frontend PayPal Buttons SDK
 POST {{baseUrl}}/payments/verify
 Authorization: Bearer {{token}}
 Content-Type: application/json
 
 {
   "courseId": "{{courseIdToView}}",
-  "razorpay_order_id": "order_XXXXXX",
-  "razorpay_payment_id": "pay_XXXXXX",
-  "razorpay_signature": "SIGNATURE_HASH_HERE"
+  "paypal_order_id": "PAYPAL_ORDER_ID_HERE"
 }
 
 
