@@ -1,0 +1,295 @@
+### =================================================================================
+### PERSON 3 — END TO END TESTING SCRIPT
+### Prequisite: Start with a clear database, or just new emails for testing.
+### Scenario: Admin creates a course, lesson, quiz, and questions (Person 1 & 2 actions).
+### Then Learner signs up, browses courses, enrolls, watches lessons, calculates progress, attempts a quiz, and leaves a review.
+### =================================================================================
+
+# Global Variables
+@admin_email = admin@learnova.com
+@admin_pass = Admin@1234
+
+@learner_email = learner@learnova.com
+@learner_pass = Learner@1234
+
+
+
+### =================================================================================
+### PART 1: DB SEEDING (PERSON 1 & 2)
+### =================================================================================
+
+### 1(a). Register Admin/Instructor
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Instructor",
+  "email": "{{admin_email}}",
+  "password": "{{admin_pass}}"
+}
+
+### 1(b). Login Admin
+# @name adminLogin
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{admin_email}}",
+  "password": "{{admin_pass}}"
+}
+
+### Store Admin Token
+@admin_token = {{adminLogin.response.body.token}}
+
+### 1(c). Create a Course
+# @name createCourse
+POST http://localhost:5000/api/courses
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "title": "Mastering frontend",
+  "description": "frontend",
+  "shortDesc": "mast frontend",
+  "visibility": "EVERYONE",
+  "accessRule": "OPEN",
+  "tags": [] 
+}
+
+### Store Course ID
+@course_id = {{createCourse.response.body.data.id}}
+
+### 1(d). Publish the Course
+PATCH http://localhost:5000/api/courses/{{course_id}}/publish
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "isPublished": true,
+  "websiteUrl": "https://example.com/course"
+}
+
+### 1(e). Create a Lesson (Using Multipart Form-Data without actual file)
+# @name createLesson
+POST http://localhost:5000/api/courses/{{course_id}}/lessons
+Authorization: Bearer {{admin_token}}
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundary7MA4YWxkTrZu0gW
+
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="title"
+
+Introduction to Node
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="type"
+
+VIDEO
+------WebKitFormBoundary7MA4YWxkTrZu0gW
+Content-Disposition: form-data; name="order"
+
+1
+------WebKitFormBoundary7MA4YWxkTrZu0gW--
+
+### Store Lesson ID
+@lesson_id = {{createLesson.response.body.data.id}}
+
+### 1(f). Create a Quiz
+# @name createQuiz
+POST http://localhost:5000/api/courses/{{course_id}}/quizzes
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "title": "Module 1 Assessment",
+  "description": "Final assessment for the first module."
+}
+
+### Store Quiz ID
+@quiz_id = {{createQuiz.response.body.id}}
+
+### 1(g). Create a Question for the Quiz
+# @name createQuestion
+POST http://localhost:5000/api/quizzes/{{quiz_id}}/questions
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "text": "Node.js is single-threaded.",
+  "order": 1
+}
+
+### Store Question ID
+@question_id = {{createQuestion.response.body.id}}
+
+### 1(h). Create Correct Option for Question
+# @name createOption
+POST http://localhost:5000/api/questions/{{question_id}}/options
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "text": "True",
+  "isCorrect": true,
+  "order": 1
+}
+
+### Store Option ID
+@option_id = {{createOption.response.body.id}}
+
+### 1(i). Create Incorrect Option for Question
+POST http://localhost:5000/api/questions/{{question_id}}/options
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "text": "False",
+  "isCorrect": false,
+  "order": 2
+}
+
+### 1(j). Set Rewards for the Quiz
+PUT http://localhost:5000/api/quizzes/{{quiz_id}}/rewards
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "rewards": [
+    { "attemptNumber": 1, "points": 100 },
+    { "attemptNumber": 2, "points": 50 }
+  ]
+}
+
+
+### =================================================================================
+### PART 2: PERSON 3 (LEARNER JOURNEY)
+### =================================================================================
+
+### 2(a). Register Learner
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Leo",
+  "lastName": "Learner",
+  "email": "{{learner_email}}",
+  "password": "{{learner_pass}}"
+}
+
+### 2(b). Login Learner
+# @name learnerLogin
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{learner_email}}",
+  "password": "{{learner_pass}}"
+}
+
+### Store Learner Token
+@learner_token = {{learnerLogin.response.body.token}}
+
+
+### 3. COURSE DISCOVERY & VIEWING
+# ---------------------------------------------------------------------------------
+
+### Browse Published Courses
+# @name publishedCourses
+GET http://localhost:5000/api/courses/published
+Authorization: Bearer {{learner_token}}
+
+
+### Get Course Details
+GET http://localhost:5000/api/courses/{{course_id}}/detail
+Authorization: Bearer {{learner_token}}
+
+
+### 4. ENROLLMENTS & PAYMENTS
+# ---------------------------------------------------------------------------------
+
+### Enroll in Course (AccessRule is OPEN)
+# @name enrollInfo
+POST http://localhost:5000/api/enrollments
+Authorization: Bearer {{learner_token}}
+Content-Type: application/json
+
+{
+  "courseId": "{{course_id}}"
+}
+
+### Get User's Active Enrollments (My Courses Page)
+GET http://localhost:5000/api/enrollments/my
+Authorization: Bearer {{learner_token}}
+
+### Get Course Progress for Enrollment
+# Assume enrollmentId from above
+@enrollment_id = {{enrollInfo.response.body.data.id}}
+
+GET http://localhost:5000/api/enrollments/{{enrollment_id}}/progress
+Authorization: Bearer {{learner_token}}
+
+
+### 5. PLAYER & PROGRESS
+# ---------------------------------------------------------------------------------
+
+### Load Lesson for Player
+GET http://localhost:5000/api/player/{{course_id}}/{{lesson_id}}
+Authorization: Bearer {{learner_token}}
+
+### Mark Lesson as Started / Completed (Records Progress)
+PATCH http://localhost:5000/api/progress/lesson/{{lesson_id}}
+Authorization: Bearer {{learner_token}}
+Content-Type: application/json
+
+{
+  "isCompleted": true,
+  "timeSpentSeconds": 180,
+  "enrollmentId": "{{enrollment_id}}"
+}
+
+### Get updated course progress showing this completed lesson
+GET http://localhost:5000/api/enrollments/{{enrollment_id}}/progress
+Authorization: Bearer {{learner_token}}
+
+
+### 6. QUIZ ATTEMPTS & ANSWERS
+# ---------------------------------------------------------------------------------
+
+### Start a New Quiz Attempt
+# @name startAttempt
+POST http://localhost:5000/api/quizzes/{{quiz_id}}/attempt
+Authorization: Bearer {{learner_token}}
+
+### Store Attempt ID
+@attempt_id = {{startAttempt.response.body.id}}
+
+### Submit Answer for the Question
+POST http://localhost:5000/api/attempts/{{attempt_id}}/answer
+Authorization: Bearer {{learner_token}}
+Content-Type: application/json
+
+{
+  "questionId": "{{question_id}}",
+  "selectedOptionId": "{{option_id}}"
+}
+
+### Complete Quiz Attempt (Triggers scoring and awarding of Points & Badges)
+POST http://localhost:5000/api/attempts/{{attempt_id}}/complete
+Authorization: Bearer {{learner_token}}
+
+
+### 7. REVIEWS
+# ---------------------------------------------------------------------------------
+
+### Add a Review for the Course
+POST http://localhost:5000/api/courses/{{course_id}}/reviews
+Authorization: Bearer {{learner_token}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "This module was excellent! Detailed and very practical to learn from."
+}
+
+### List Course Reviews (Should show newly added review and updated average score)
+GET http://localhost:5000/api/courses/{{course_id}}/reviews
+Authorization: Bearer {{learner_token}}

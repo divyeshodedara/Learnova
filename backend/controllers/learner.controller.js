@@ -113,9 +113,15 @@ exports.enrollInCourse = async (req, res, next) => {
       const invitation = await prisma.invitation.findFirst({
         where: { courseId, OR: [{ email: req.user.email }, { invitedUserId: userId }] },
       });
-      if (!invitation) {
-        return res.status(403).json({ success: false, error: "You need an invitation to enroll in this course." });
+      if (!invitation || invitation.acceptedAt) {
+        return res.status(403).json({ success: false, error: "You need a valid invitation to enroll in this course." });
       }
+      
+      // Consume the invitation
+      await prisma.invitation.update({
+        where: { id: invitation.id },
+        data: { acceptedAt: new Date(), invitedUserId: userId },
+      });
     }
 
     // Create enrollment for OPEN or ON_INVITATION (where verified)

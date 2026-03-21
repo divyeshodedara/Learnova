@@ -158,10 +158,15 @@ exports.submitQuizAnswer = async (req, res, next) => {
 
     const selectedOption = await prisma.questionOption.findUnique({
       where: { id: selectedOptionId },
+      include: { question: true },
     });
 
     if (!selectedOption || selectedOption.questionId !== questionId) {
       return res.status(400).json({ success: false, error: "Invalid option for this question" });
+    }
+
+    if (selectedOption.question.quizId !== attempt.quizId) {
+      return res.status(400).json({ success: false, error: "Question does not belong to this quiz attempt" });
     }
 
     const answer = await prisma.attemptAnswer.upsert({
@@ -227,12 +232,9 @@ exports.completeQuizAttempt = async (req, res, next) => {
       },
     });
 
-    // Check pass/fail logic here if applicable. By default, granting rewards.
-    // Wait, the specification implies we give rewards on completion based on attempt number.
-    if (scorePercent >= 70 || totalQuestions === 0) {
-        // typically, rewards are for passing. We will grant rewards anyway per instructions
-        await awardPoints(userId, attempt.quizId, attempt.id, attempt.attemptNumber);
-    }
+    // The specification implies we give rewards on completion based on attempt number.
+    // We will grant rewards regardless of score.
+    await awardPoints(userId, attempt.quizId, attempt.id, attempt.attemptNumber);
 
     res.json({ success: true, data: completedAttempt });
   } catch (error) {

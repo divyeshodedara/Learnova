@@ -23,6 +23,11 @@ app.get("/", (req, res) => {
   res.json({ message: "Learnova API is running" });
 });
 
+// Person 3 Routes (Mount before Course Routes to prevent /api/courses/published being caught by /api/courses/:id)
+app.use("/api", require("./routes/learner.routes.js"));
+app.use("/api", require("./routes/player.routes.js"));
+app.use("/api", require("./routes/payment.routes.js"));
+
 // ─── API routes ──────────────────────────────────────────
 const courseRoutes = require("./routes/course.routes.js");
 const lessonRoutes = require("./routes/lesson.routes.js");

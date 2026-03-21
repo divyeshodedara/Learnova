@@ -10,7 +10,7 @@ const authenticate = (req, res, next) => {
   // 1. Check cookies first
   if (req.cookies && req.cookies.token) {
     token = req.cookies.token;
-  } 
+  }
   // 2. Fallback to Authorization header
   else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
     token = req.headers.authorization.split(" ")[1];
@@ -24,7 +24,7 @@ const authenticate = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = { id: decoded.userId, email: decoded.email, role: decoded.role };
+    req.user = { userId: decoded.userId, email: decoded.email, role: decoded.role };
     next();
   } catch {
     return res

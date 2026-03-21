@@ -108,28 +108,26 @@ exports.verifyPayment = async (req, res, next) => {
 
     const captureId = captureResult.result.purchase_units[0].payments.captures[0].id;
 
-    // Process inside transaction to be safe
-    const [updatedPayment, enrollment] = await prisma.$transaction([
-      prisma.payment.update({
-        where: { id: payment.id },
-        data: {
-          status: "SUCCESS",
-          providerPaymentId: captureId, // Save the capture ID
-        },
-      }),
-      prisma.enrollment.create({
+    // Process inside an interactive transaction for full atomicity
+    const { enrollment, updatedPayment } = await prisma.$transaction(async (tx) => {
+      const newEnrollment = await tx.enrollment.create({
         data: {
           userId,
           courseId,
           status: "YET_TO_START",
         },
-      })
-    ]);
+      });
 
-    // Finally associate payment with new enrollment (because optional 1:1 relation usually applies at FK level)
-    await prisma.payment.update({
+      const updated = await tx.payment.update({
         where: { id: payment.id },
-        data: { enrollmentId: enrollment.id }
+        data: {
+          status: "SUCCESS",
+          providerPaymentId: captureId, // Save the capture ID
+          enrollmentId: newEnrollment.id,
+        },
+      });
+
+      return { enrollment: newEnrollment, updatedPayment: updated };
     });
 
     res.json({ success: true, data: { enrollment, payment: updatedPayment } });
