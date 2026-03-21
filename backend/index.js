@@ -43,7 +43,6 @@ app.use("/api/attachments", attachmentRoutes);
 app.use("/api/tags", tagRoutes);
 app.use("/api/admin", adminRoutes);
 
-
 app.use("/api/quizzes", quizRoutes);
 app.use("/api/reporting", reportingRoutes);
 app.use("/api/invitations", invitationRoutes);

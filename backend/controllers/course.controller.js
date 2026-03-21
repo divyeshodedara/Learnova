@@ -33,7 +33,7 @@ exports.createCourse = async (req, res) => {
     let slug = baseSlug;
     let count = 1;
     
-    // Ensure unique slug
+    //Ensure unique slug
     while (await prisma.course.findUnique({ where: { slug } })) {
       slug = `${baseSlug}-${count}`;
       count++;
