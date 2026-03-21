@@ -35,6 +35,8 @@ app.use("/api/lessons", lessonRoutes);
 app.use("/api/attachments", attachmentRoutes);
 app.use("/api/tags", tagRoutes);
 
+app.use("/api/admin", require("./routes/admin.routes.js"));
+
 // Person 2 Routes
 app.use("/api", require("./routes/quiz.routes.js"));
 app.use("/api", require("./routes/reporting.routes.js"));

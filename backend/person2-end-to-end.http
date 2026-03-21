@@ -12,7 +12,7 @@
 @instructor_pass = Instructor@1234
 
 # Use this course ID or replace with one from your DB
-@course_id = cmn04onra0001wiud06hc8uh8
+@course_id = cmn04iojp0002v6mfppnr3ljk
 # Test student email for invitations
 @student_email = student_test@learnova.com
 
@@ -93,6 +93,7 @@ Content-Type: application/json
   "order": 1
 }
 
+### 
 @q1_id = {{addQuestion1.response.body.id}}
 
 
@@ -129,6 +130,7 @@ Content-Type: application/json
   "order": 2
 }
 
+### 
 @q2_id = {{addQuestion2.response.body.id}}
 
 ### Add Options for Question 2
@@ -224,6 +226,7 @@ Content-Type: application/json
   "password": "{{student_pass}}"
 }
 
+### 
 @student_token = {{studentLogin.response.body.token}}
 
 ### Accept Invitation (Simulated - normally via email link)
