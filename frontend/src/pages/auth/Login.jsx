@@ -1,22 +1,17 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Lock, Loader2, LogIn } from "lucide-react";
-import axios from "axios";
+import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
+import { loginUser } from "../../api/auth";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
+import { ModeToggle } from "../../components/mode-toggle";
+import styles from "./auth.module.css";
 
 export default function Login() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -30,82 +25,115 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      const response = await axios.post("/api/auth/login", formData);
+      const response = await loginUser(formData);
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
-      navigate("/dashboard");
+      window.location.href = "/dashboard";
     } catch (err) {
-      // Backend now sends a clean 'message' field for all errors (validation or business logic)
-      setError(err.response?.data?.message || err.response?.data?.error || "Invalid credentials");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Invalid credentials"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 flex flex-col items-center">
-            <img src="/logo.svg" alt="Learnova" className="h-12 w-12 dark:invert mb-4" />
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Welcome back
-          </CardTitle>
-          <CardDescription>
-            Enter your email to sign in to your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
+    <div className={styles.authPage}>
+      <div className={styles.themeToggle}>
+        <ModeToggle />
+      </div>
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <div className={styles.logoWrapper}>
+              <img src="/logo.svg" alt="Learnova" className="dark:invert" />
             </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  className="pl-10"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
+            <h1 className={styles.authTitle}>Welcome back</h1>
+            <p className={styles.authSubtitle}>
+              Sign in to continue your learning journey
+            </p>
+          </div>
+          <div className={styles.authBody}>
+            <form onSubmit={handleSubmit} className={styles.authForm}>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Email</label>
+                <div className={styles.inputWrapper}>
+                  <Mail className={styles.inputIcon} />
+                  <Input
+                    id="login-email"
+                    name="email"
+                    type="email"
+                    placeholder="name@example.com"
+                    className="pl-10"
+                    value={formData.email}
+                    onChange={handleChange}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
               </div>
-            </div>
-            {error && <p className="text-sm text-destructive text-center">{error}</p>}
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <LogIn className="mr-2 h-4 w-4" /> Sign In
-                </>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Don&apos;t have an account?{" "}
-            <Link to="/signup" className="text-primary underline hover:text-primary/80">
-              Sign up
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Password</label>
+                <div className={styles.inputWrapper}>
+                  <Lock className={styles.inputIcon} />
+                  <Input
+                    id="login-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Enter your password"
+                    className="pl-10 pr-10"
+                    value={formData.password}
+                    onChange={handleChange}
+                    required
+                    autoComplete="current-password"
+                  />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
+                </div>
+              </div>
+              {error && <p className={styles.errorMessage}>{error}</p>}
+              <Button
+                id="login-submit"
+                className={styles.submitButton + " w-full"}
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Sign In
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+          <div className={styles.authFooter}>
+            <p className={styles.footerText}>
+              Don&apos;t have an account?
+              <Link to="/signup" className={styles.footerLink}>
+                Create account
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

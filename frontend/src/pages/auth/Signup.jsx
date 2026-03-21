@@ -1,28 +1,48 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { User, Mail, Lock, Loader2, ArrowRight } from "lucide-react";
-import axios from "axios";
+import {
+  User,
+  Mail,
+  Lock,
+  Loader2,
+  ArrowRight,
+  Eye,
+  EyeOff,
+} from "lucide-react";
+import { signupUser } from "../../api/auth";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "../../components/ui/Card";
+import { ModeToggle } from "../../components/mode-toggle";
+import styles from "./auth.module.css";
+
+function getPasswordStrength(password) {
+  if (!password) return { score: 0, label: "" };
+  let score = 0;
+  if (password.length >= 8) score++;
+  if (/[A-Z]/.test(password)) score++;
+  if (/[0-9]/.test(password)) score++;
+  if (/[^A-Za-z0-9]/.test(password)) score++;
+  const labels = ["", "Weak", "Fair", "Good", "Strong"];
+  const levels = ["", "weak", "fair", "good", "strong"];
+  return { score, label: labels[score], level: levels[score] };
+}
 
 export default function Signup() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
     email: "",
     password: "",
   });
+
+  const strength = useMemo(
+    () => getPasswordStrength(formData.password),
+    [formData.password]
+  );
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -32,108 +52,162 @@ export default function Signup() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setError("");
     try {
-      await axios.post("/api/auth/signup", formData);
+      await signupUser(formData);
       navigate("/login");
     } catch (err) {
-      // Backend now sends a clean 'message' field for all errors (validation or business logic)
-      setError(err.response?.data?.message || err.response?.data?.error || "Something went wrong");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.error ||
+          "Something went wrong"
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="space-y-1 flex flex-col items-center">
-            <img src="/logo.svg" alt="Learnova" className="h-12 w-12 dark:invert mb-4" />
-          <CardTitle className="text-2xl font-bold tracking-tight">
-            Create an account
-          </CardTitle>
-          <CardDescription>
-            Enter your email below to create your account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+    <div className={styles.authPage}>
+      <div className={styles.themeToggle}>
+        <ModeToggle />
+      </div>
+      <div className={styles.authContainer}>
+        <div className={styles.authCard}>
+          <div className={styles.authHeader}>
+            <div className={styles.logoWrapper}>
+              <img src="/logo.svg" alt="Learnova" className="dark:invert" />
+            </div>
+            <h1 className={styles.authTitle}>Create an account</h1>
+            <p className={styles.authSubtitle}>
+              Start your learning journey today
+            </p>
+          </div>
+          <div className={styles.authBody}>
+            <form onSubmit={handleSubmit} className={styles.authForm}>
+              <div className={styles.nameRow}>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>First Name</label>
+                  <div className={styles.inputWrapper}>
+                    <User className={styles.inputIcon} />
+                    <Input
+                      id="signup-firstname"
+                      name="firstName"
+                      placeholder="John"
+                      className="pl-10"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      required
+                      autoComplete="given-name"
+                    />
+                  </div>
+                </div>
+                <div className={styles.fieldGroup}>
+                  <label className={styles.fieldLabel}>Last Name</label>
+                  <div className={styles.inputWrapper}>
+                    <User className={styles.inputIcon} />
+                    <Input
+                      id="signup-lastname"
+                      name="lastName"
+                      placeholder="Doe"
+                      className="pl-10"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      required
+                      autoComplete="family-name"
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Email</label>
+                <div className={styles.inputWrapper}>
+                  <Mail className={styles.inputIcon} />
                   <Input
-                    name="firstName"
-                    placeholder="First Name"
+                    id="signup-email"
+                    name="email"
+                    type="email"
+                    placeholder="name@example.com"
                     className="pl-10"
-                    value={formData.firstName}
+                    value={formData.email}
                     onChange={handleChange}
                     required
+                    autoComplete="email"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <div className="relative">
-                  <User className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
+              <div className={styles.fieldGroup}>
+                <label className={styles.fieldLabel}>Password</label>
+                <div className={styles.inputWrapper}>
+                  <Lock className={styles.inputIcon} />
                   <Input
-                    name="lastName"
-                    placeholder="Last Name"
-                    className="pl-10"
-                    value={formData.lastName}
+                    id="signup-password"
+                    name="password"
+                    type={showPassword ? "text" : "password"}
+                    placeholder="Min 8 characters"
+                    className="pl-10 pr-10"
+                    value={formData.password}
                     onChange={handleChange}
                     required
+                    autoComplete="new-password"
                   />
+                  <button
+                    type="button"
+                    className={styles.passwordToggle}
+                    onClick={() => setShowPassword(!showPassword)}
+                    tabIndex={-1}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
+                {formData.password && (
+                  <>
+                    <div className={styles.strengthBar}>
+                      {[1, 2, 3, 4].map((i) => (
+                        <div
+                          key={i}
+                          className={styles.strengthSegment}
+                          data-active={i <= strength.score ? "true" : "false"}
+                          data-level={strength.level}
+                        />
+                      ))}
+                    </div>
+                    <p className={styles.strengthText}>{strength.label}</p>
+                  </>
+                )}
               </div>
-            </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Mail className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input
-                  name="email"
-                  type="email"
-                  placeholder="name@example.com"
-                  className="pl-10"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <div className="relative">
-                <Lock className="absolute left-3 top-2.5 h-5 w-5 text-muted-foreground" />
-                <Input
-                  name="password"
-                  type="password"
-                  placeholder="Password"
-                  className="pl-10"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </div>
-            </div>
-            {error && <p className="text-sm text-destructive text-center">{error}</p>}
-            <Button className="w-full" type="submit" disabled={loading}>
-              {loading ? (
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  Sign Up <ArrowRight className="ml-2 h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex justify-center">
-          <p className="text-sm text-muted-foreground">
-            Already have an account?{" "}
-            <Link to="/login" className="text-primary underline hover:text-primary/80">
-              Login
-            </Link>
-          </p>
-        </CardFooter>
-      </Card>
+              {error && <p className={styles.errorMessage}>{error}</p>}
+              <Button
+                id="signup-submit"
+                className={styles.submitButton + " w-full"}
+                type="submit"
+                disabled={loading}
+              >
+                {loading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    Create Account
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+          </div>
+          <div className={styles.authFooter}>
+            <p className={styles.footerText}>
+              Already have an account?
+              <Link to="/login" className={styles.footerLink}>
+                Sign in
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
