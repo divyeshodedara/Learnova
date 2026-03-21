@@ -6,10 +6,8 @@ const inviteUser = async (req, res) => {
   try {
     const { id: courseId } = req.params;
     const { email } = req.body;
-    // user who is inviting - assuming attached to req.user by auth middleware
-    // const invitedById = req.user.id; 
-    // For now mocking or assuming passed in body if no auth yet
-    const invitedById = "cm8e3s4l5000008mi3z5x7k2b"; // TODO: Replace with req.user.id
+    // user who is inviting - attached to req.user by auth middleware
+    const invitedById = req.user.id; 
 
     // Check if duplicate invitation
     const existing = await prisma.invitation.findUnique({

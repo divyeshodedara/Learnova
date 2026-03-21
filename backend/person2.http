@@ -1,0 +1,159 @@
+### 1. Register & Login (to get token)
+
+# Signup as Admin
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Person2",
+  "lastName": "Admin",
+  "email": "person2@example.com",
+  "password": "Password@123"
+}
+
+###
+# Login
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "person2@example.com",
+  "password": "Password@123"
+}
+
+# @token = YOUR_JWT_TOKEN_HERE
+
+### 2. Quiz Management
+
+# Create a Quiz for a Course
+# Replace COURSE_ID with a valid one
+POST http://localhost:5000/api/courses/COURSE_ID/quizzes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Mid-Term Exam",
+  "description": "Comprehensive test of modules 1-5"
+}
+
+###
+# List Quizzes for a Course
+GET http://localhost:5000/api/courses/COURSE_ID/quizzes
+Authorization: Bearer {{token}}
+
+###
+# Update a Quiz
+# Replace QUIZ_ID
+PATCH http://localhost:5000/api/quizzes/QUIZ_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Mid-Term Exam (Revised)"
+}
+
+###
+# Delete a Quiz
+DELETE http://localhost:5000/api/quizzes/QUIZ_ID
+Authorization: Bearer {{token}}
+
+
+### 3. Question & Option Management
+
+# Add a Question
+# Replace QUIZ_ID
+POST http://localhost:5000/api/quizzes/QUIZ_ID/questions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "What does HTTP stand for?",
+  "order": 1
+}
+
+###
+# Edit a Question
+# Replace QUESTION_ID
+PATCH http://localhost:5000/api/questions/QUESTION_ID
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "What does HTTP stand for? (Select one)"
+}
+
+###
+# Add Options
+# Replace QUESTION_ID
+POST http://localhost:5000/api/questions/QUESTION_ID/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "HyperText Transfer Protocol",
+  "isCorrect": true,
+  "order": 1
+}
+
+###
+# Add Another Option
+POST http://localhost:5000/api/questions/QUESTION_ID/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "High Transfer Text Protocol",
+  "isCorrect": false,
+  "order": 2
+}
+
+### 4. Rewards Management
+
+# Set Reward Tiers for Quiz Attempts
+# Replace QUIZ_ID
+PUT http://localhost:5000/api/quizzes/QUIZ_ID/rewards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "rewards": [
+    { "attemptNumber": 1, "points": 100 },
+    { "attemptNumber": 2, "points": 80 },
+    { "attemptNumber": 3, "points": 50 }
+  ]
+}
+
+
+### 5. Invitations
+
+# Invite a User to a Course
+# Replace COURSE_ID
+POST http://localhost:5000/api/courses/COURSE_ID/invitations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "learner@example.com"
+}
+
+###
+# List Invitations
+GET http://localhost:5000/api/courses/COURSE_ID/invitations
+Authorization: Bearer {{token}}
+
+###
+# Accept Invitation (Public Route, No Token needed usually, or specific logic)
+# Replace TOKEN from email link
+POST http://localhost:5000/api/invitations/accept/INVITATION_TOKEN_HERE
+
+
+### 6. Reporting
+
+# Overview Stats
+GET http://localhost:5000/api/reporting
+Authorization: Bearer {{token}}
+
+###
+# User Progress Table
+GET http://localhost:5000/api/reporting/users?courseId=COURSE_ID
+Authorization: Bearer {{token}}
