@@ -11,7 +11,10 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ─── Middleware ───────────────────────────────────────────
-app.use(cors());
+const cookieParser = require("cookie-parser");
+
+app.use(cors({ origin: true, credentials: true })); // usually needed for cookies
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -21,7 +24,23 @@ app.get("/", (req, res) => {
 });
 
 // ─── API routes ──────────────────────────────────────────
+const courseRoutes = require("./routes/course.routes.js");
+const lessonRoutes = require("./routes/lesson.routes.js");
+const attachmentRoutes = require("./routes/attachment.routes.js");
+const tagRoutes = require("./routes/tag.routes.js");
+
 app.use("/api/auth", authRoutes);
+app.use("/api/courses", courseRoutes);
+app.use("/api/lessons", lessonRoutes);
+app.use("/api/attachments", attachmentRoutes);
+app.use("/api/tags", tagRoutes);
+
+app.use("/api/admin", require("./routes/admin.routes.js"));
+
+// Person 2 Routes
+app.use("/api", require("./routes/quiz.routes.js"));
+app.use("/api", require("./routes/reporting.routes.js"));
+app.use("/api", require("./routes/invitation.routes.js"));
 
 // ─── 404 handler ─────────────────────────────────────────
 app.use((req, res) => {

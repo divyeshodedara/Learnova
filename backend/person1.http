@@ -1,0 +1,136 @@
+### 1. Register & Login (to get your token)
+
+# Signup a new Admin/Instructor
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "admin@example.com",
+  "password": "Password@123"
+}
+
+###
+# Login to get the JWT token
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Password@123"
+}
+
+# (Optional: if your Cookie works, you don't even need to use the token below)
+@token = YOUR_JWT_TOKEN_HERE
+
+
+### 2. Tag Management
+
+# Create a Tag
+POST http://localhost:5000/api/tags
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "JavaScript"
+}
+
+###
+# List all Tags
+GET http://localhost:5000/api/tags
+Authorization: Bearer {{token}}
+
+
+### 3. Course Management
+
+# Create a Course
+POST http://localhost:5000/api/courses
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Mastering Node.js",
+  "description": "Learn backend development with Express and Prisma",
+  "shortDesc": "A complete guide to Node.js",
+  "visibility": "EVERYONE",
+  "accessRule": "OPEN",
+  "tags": [] 
+}
+
+###
+# Get all Courses
+GET http://localhost:5000/api/courses
+Authorization: Bearer {{token}}
+
+###
+# Get single Course
+GET http://localhost:5000/api/courses/INSERT_COURSE_ID_HERE
+Authorization: Bearer {{token}}
+
+###
+# Toggle Publish Status
+PATCH http://localhost:5000/api/courses/INSERT_COURSE_ID_HERE/publish
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isPublished": true,
+  "websiteUrl": "https://example.com/course"
+}
+
+###
+# Delete a Course
+DELETE http://localhost:5000/api/courses/INSERT_COURSE_ID_HERE
+Authorization: Bearer {{token}}
+
+
+### 4. Lesson Management
+
+# List lessons for a course
+GET http://localhost:5000/api/courses/INSERT_COURSE_ID_HERE/lessons
+Authorization: Bearer {{token}}
+
+###
+# Create a Lesson (with file upload)
+# ⚠️ IN POSTMAN: Go to Body -> form-data. Do NOT use raw JSON.
+# Add these Keys:
+# - title (Text): Introduction to Node
+# - type (Text): VIDEO
+# - order (Text): 1
+# - file (File): [Select your video/PDF from your computer]
+POST http://localhost:5000/api/courses/INSERT_COURSE_ID_HERE/lessons
+Authorization: Bearer {{token}}
+
+###
+# Edit a Lesson
+PATCH http://localhost:5000/api/lessons/INSERT_LESSON_ID_HERE
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Introduction to Node (Updated)",
+  "duration": 360
+}
+
+###
+# Delete a Lesson
+DELETE http://localhost:5000/api/lessons/INSERT_LESSON_ID_HERE
+Authorization: Bearer {{token}}
+
+
+### 5. Attachment Management
+
+# Add an Attachment to a Lesson
+# ⚠️ IN POSTMAN: Go to Body -> form-data.
+# Add these Keys:
+# - type (Text): FILE
+# - label (Text): Course Syllabus
+# - file (File): [Select your document from your computer]
+POST http://localhost:5000/api/lessons/INSERT_LESSON_ID_HERE/attachments
+Authorization: Bearer {{token}}
+
+###
+# Delete an Attachment
+DELETE http://localhost:5000/api/attachments/INSERT_ATTACHMENT_ID_HERE
+Authorization: Bearer {{token}}

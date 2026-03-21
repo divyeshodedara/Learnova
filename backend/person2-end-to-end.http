@@ -1,0 +1,237 @@
+### =================================================================================
+### PERSON 2 — END TO END TESTING SCRIPT
+### Prequisite: Run `npx prisma db seed` to create Admin and Instructor accounts.
+### Scenario: Instructor creates Quiz, Questions, Rewards. Then Instructor checks Reports.
+### =================================================================================
+
+# Global Variables
+# SEEDED ACCOUNTS
+@admin_email = admin@learnova.com
+@admin_pass = Admin@1234
+@instructor_email = instructor@learnova.com
+@instructor_pass = Instructor@1234
+
+# Use this course ID or replace with one from your DB
+@course_id = cmn04iojp0002v6mfppnr3ljk
+# Test student email for invitations
+@student_email = 23bce200@nirmauni.ac.in
+
+
+
+### 1. LOGIN AS ADMIN (To checking Admin access)
+# ---------------------------------------------------------------------------------
+# @name adminLogin
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{admin_email}}",
+  "password": "{{admin_pass}}"
+}
+
+
+### 2. LOGIN AS INSTRUCTOR (The one created by seed.js)
+# (We need the token to do everything else)
+# ---------------------------------------------------------------------------------
+# @name instructorLogin
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{instructor_email}}",
+  "password": "{{instructor_pass}}"
+}
+
+### Store Token
+@token = {{instructorLogin.response.body.token}}
+
+
+### 3. QUIZ MANAGEMENT
+# ---------------------------------------------------------------------------------
+
+### Create a Quiz for the Course
+# @name createQuiz
+POST http://localhost:5000/api/courses/{{course_id}}/quizzes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Final Exam - Module 1",
+  "description": "This is the final assessment for the Backend module."
+}
+
+### Store Quiz ID
+@quiz_id = {{createQuiz.response.body.id}}
+
+
+### List Quizzes (Verify Creation)
+GET http://localhost:5000/api/courses/{{course_id}}/quizzes
+Authorization: Bearer {{token}}
+
+
+### Update Quiz Title
+PATCH http://localhost:5000/api/quizzes/{{quiz_id}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Final Exam - Module 1 (Revised)"
+}
+
+
+### 3. QUESTION MANAGEMENT
+# ---------------------------------------------------------------------------------
+
+### Add Question 1
+# @name addQuestion1
+POST http://localhost:5000/api/quizzes/{{quiz_id}}/questions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "Which HTTP method is used to create a resource?",
+  "order": 1
+}
+
+### 
+@q1_id = {{addQuestion1.response.body.id}}
+
+
+### Add Options for Question 1
+POST http://localhost:5000/api/questions/{{q1_id}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "GET",
+  "isCorrect": false,
+  "order": 1
+}
+
+###
+POST http://localhost:5000/api/questions/{{q1_id}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "POST",
+  "isCorrect": true,
+  "order": 2
+}
+
+
+### Add Question 2
+# @name addQuestion2
+POST http://localhost:5000/api/quizzes/{{quiz_id}}/questions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "Node.js is single-threaded.",
+  "order": 2
+}
+
+### 
+@q2_id = {{addQuestion2.response.body.id}}
+
+### Add Options for Question 2
+POST http://localhost:5000/api/questions/{{q2_id}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "True",
+  "isCorrect": true,
+  "order": 1
+}
+
+###
+POST http://localhost:5000/api/questions/{{q2_id}}/options
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "text": "False",
+  "isCorrect": false,
+  "order": 2
+}
+
+
+### 4. REWARDS MANAGEMENT
+# ---------------------------------------------------------------------------------
+
+### Set Rewards for Quiz
+PUT http://localhost:5000/api/quizzes/{{quiz_id}}/rewards
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "rewards": [
+    { "attemptNumber": 1, "points": 100 },
+    { "attemptNumber": 2, "points": 75 },
+    { "attemptNumber": 3, "points": 50 }
+  ]
+}
+
+
+### 5. INVITATIONS
+# ---------------------------------------------------------------------------------
+
+### Invite Student
+POST http://localhost:5000/api/courses/{{course_id}}/invitations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "email": "{{student_email}}"
+}
+
+### List Invitations
+GET http://localhost:5000/api/courses/{{course_id}}/invitations
+Authorization: Bearer {{token}}
+
+
+### 6. REPORTING (Instructor View)
+# ---------------------------------------------------------------------------------
+
+### Get Overview Stats
+GET http://localhost:5000/api/reporting
+Authorization: Bearer {{token}}
+
+### Get Detailed Learner Progress
+GET http://localhost:5000/api/reporting/users?courseId={{course_id}}
+Authorization: Bearer {{token}}
+
+
+### =================================================================================
+### STUDENT SIDE (To complete the cycle - Optional for Person 2 but good for testing)
+### =================================================================================
+
+### Register Student (if not exists)
+POST http://localhost:5000/api/auth/signup
+Content-Type: application/json
+
+{
+  "firstName": "Nirma",
+  "lastName": "Student",
+  "email": "{{student_email}}",
+  "password": "{{student_pass}}"
+}
+
+### Login as Student
+# @name studentLogin
+POST http://localhost:5000/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "{{student_email}}",
+  "password": "{{student_pass}}"
+}
+
+### 
+@student_token = {{studentLogin.response.body.token}}
+
+### Accept Invitation (Simulated - normally via email link)
+# You need the token from the "List Invitations" response above.
+# Replace TOKEN_HERE manually if testing flow.
+# POST http://localhost:5000/api/invitations/accept/TOKEN_HERE
