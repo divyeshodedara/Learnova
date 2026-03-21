@@ -3,7 +3,7 @@ const prisma = require("../lib/prisma.js");
 const bcrypt = require("bcrypt");
 
 async function main() {
-  console.log("🌱 Seeding database...");
+  console.log("Seeding database...");
 
   const passwordHash = await bcrypt.hash("Admin@1234", 10);
   const instructorPasswordHash = await bcrypt.hash("Instructor@1234", 10);
@@ -20,7 +20,7 @@ async function main() {
       role: "ADMIN",
     },
   });
-  console.log(`✅ Admin seeded: ${admin.email}`);
+  console.log(`Admin seeded: ${admin.email}`);
 
   // 2. Seed Instructor (for testing)
   const instructor = await prisma.user.upsert({
@@ -34,7 +34,7 @@ async function main() {
       role: "INSTRUCTOR",
     },
   });
-  console.log(`✅ Instructor seeded: ${instructor.email}`);
+  console.log(`Instructor seeded: ${instructor.email}`);
 }
 
 main()

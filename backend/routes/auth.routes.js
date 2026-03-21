@@ -6,8 +6,6 @@ const { signup, login, me } = require("../controllers/auth.controller.js");
 
 const router = Router();
 
-// ─── Schemas ─────────────────────────────────────────────
-
 const signupSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
@@ -25,8 +23,6 @@ const loginSchema = z.object({
   email: z.string().email("Invalid email address"),
   password: z.string().min(1, "Password is required"),
 });
-
-// ─── Routes ──────────────────────────────────────────────
 
 router.post("/signup", validate(signupSchema), signup);
 router.post("/login", validate(loginSchema), login);

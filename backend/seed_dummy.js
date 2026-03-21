@@ -2,7 +2,7 @@ require("dotenv").config();
 const prisma = require("./lib/prisma");
 
 async function main() {
-  console.log("🌱 Seeding database with dummy data for Testing...");
+  console.log("Seeding database with dummy data for Testing...");
 
   // 1. Create Instructor
   const instructor = await prisma.user.upsert({
@@ -16,7 +16,7 @@ async function main() {
       role: "INSTRUCTOR",
     },
   });
-  console.log(`✅ Instructor ID: ${instructor.id}`);
+  console.log(`Instructor ID: ${instructor.id}`);
 
   // 2. Create Course
   const course = await prisma.course.create({
@@ -29,7 +29,7 @@ async function main() {
       visibility: "EVERYONE",
     },
   });
-  console.log(`✅ Course ID: ${course.id}`);
+  console.log(`Course ID: ${course.id}`);
 
   // 3. Create a Quiz (to test adding questions/options to an existing quiz)
   const quiz = await prisma.quiz.create({
@@ -39,7 +39,7 @@ async function main() {
       courseId: course.id,
     },
   });
-  console.log(`✅ Quiz ID: ${quiz.id}`);
+  console.log(`Quiz ID: ${quiz.id}`);
 
   // 4. Create a Question (to test adding options to an existing question)
   const question = await prisma.question.create({
@@ -49,9 +49,9 @@ async function main() {
       quizId: quiz.id,
     },
   });
-  console.log(`✅ Question ID: ${question.id}`);
+  console.log(`Question ID: ${question.id}`);
 
-  console.log("\n👇 COPY THESE COMMANDS TO TEST (All IDs are pre-filled) 👇\n");
+  console.log("\nCOPY THESE COMMANDS TO TEST (All IDs are pre-filled)\n");
 
   console.log(`
 # 1. List Quizzes
