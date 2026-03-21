@@ -5,15 +5,22 @@ const jwt = require("jsonwebtoken");
  * Attaches decoded { userId, email, role } to req.user
  */
 const authenticate = (req, res, next) => {
-  const header = req.headers.authorization;
+  let token;
 
-  if (!header || !header.startsWith("Bearer ")) {
+  // 1. Check cookies first
+  if (req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  } 
+  // 2. Fallback to Authorization header
+  else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
+    token = req.headers.authorization.split(" ")[1];
+  }
+
+  if (!token) {
     return res
       .status(401)
       .json({ success: false, error: "Authentication required" });
   }
-
-  const token = header.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
