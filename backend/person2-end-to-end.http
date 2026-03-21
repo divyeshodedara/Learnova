@@ -14,7 +14,7 @@
 # Use this course ID or replace with one from your DB
 @course_id = cmn04iojp0002v6mfppnr3ljk
 # Test student email for invitations
-@student_email = student_test@learnova.com
+@student_email = 23bce200@nirmauni.ac.in
 
 
 
@@ -108,6 +108,7 @@ Content-Type: application/json
   "order": 1
 }
 
+###
 POST http://localhost:5000/api/questions/{{q1_id}}/options
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -144,6 +145,7 @@ Content-Type: application/json
   "order": 1
 }
 
+###
 POST http://localhost:5000/api/questions/{{q2_id}}/options
 Authorization: Bearer {{token}}
 Content-Type: application/json
