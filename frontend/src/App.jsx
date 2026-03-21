@@ -7,6 +7,17 @@ import Dashboard from "./pages/Dashboard";
 import ComingSoon from "./pages/ComingSoon";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import UserManagement from "./pages/admin/UserManagement";
+import CourseList from "./pages/management/CourseList";
+import CourseEditor from "./pages/management/CourseEditor";
+import CurriculumBuilder from "./pages/management/CurriculumBuilder";
+import Reporting from "./pages/management/Reporting";
+import BrowseCourses from "./pages/learner/BrowseCourses";
+import CourseDetail from "./pages/learner/CourseDetail";
+import MyCourses from "./pages/learner/MyCourses";
+import PaymentHistory from "./pages/learner/PaymentHistory";
+import CoursePlayer from "./pages/learner/CoursePlayer";
+import QuizPlayer from "./pages/learner/QuizPlayer";
 
 function App() {
   const { user, loading, logout, isAdmin, isBackoffice } = useAuth();
@@ -31,7 +42,23 @@ function App() {
             path="/courses"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <ComingSoon title="Courses Management" description="Create and manage your courses" />
+                <CourseList user={user} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id/edit"
+            element={
+              <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
+                <CourseEditor user={user} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id/curriculum"
+            element={
+              <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
+                <CurriculumBuilder user={user} />
               </ProtectedRoute>
             }
           />
@@ -40,7 +67,7 @@ function App() {
             path="/users"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN"]}>
-                <ComingSoon title="User Management" description="Manage platform users and roles" />
+                <UserManagement />
               </ProtectedRoute>
             }
           />
@@ -49,7 +76,7 @@ function App() {
             path="/reporting"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <ComingSoon title="Reporting Dashboard" description="Track learner progress and analytics" />
+                <Reporting user={user} />
               </ProtectedRoute>
             }
           />
@@ -57,24 +84,52 @@ function App() {
           <Route
             path="/browse"
             element={
-              <ComingSoon title="Browse Courses" description="Discover and enroll in published courses" />
+              <BrowseCourses />
+            }
+          />
+          <Route
+            path="/browse/:id"
+            element={
+              <CourseDetail />
             }
           />
 
           <Route
             path="/my-courses"
             element={
-              <ComingSoon title="My Courses" description="View your enrolled courses and track progress" />
+              <ProtectedRoute user={user} loading={false}>
+                <MyCourses />
+              </ProtectedRoute>
             }
           />
 
           <Route
             path="/payments"
             element={
-              <ComingSoon title="Payments" description="View your payment history" />
+              <ProtectedRoute user={user} loading={false}>
+                <PaymentHistory />
+              </ProtectedRoute>
             }
           />
         </Route>
+
+        {/* Special layout for course player, doesn't use DashboardLayout necessarily, but relies on auth */}
+        <Route
+          path="/player/:courseId/:lessonId"
+          element={
+            <ProtectedRoute user={user} loading={loading}>
+              <CoursePlayer />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/player/:courseId/quiz/:quizId"
+          element={
+            <ProtectedRoute user={user} loading={loading}>
+              <QuizPlayer />
+            </ProtectedRoute>
+          }
+        />
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
       </Routes>

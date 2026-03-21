@@ -1,5 +1,5 @@
 import api from "./axios";
 
-export const enrollInCourse = (courseId) => api.post("/enrollments", { courseId });
-export const getMyEnrollments = () => api.get("/enrollments/my");
-export const getCourseProgress = (enrollmentId) => api.get(`/enrollments/${enrollmentId}/progress`);
+export const enrollCourse = (data) => api.post("/learners/enrollments", data);
+export const getMyEnrollments = () => api.get("/learners/enrollments/my");
+export const getCourseProgress = (enrollmentId) => api.get(`/learners/enrollments/${enrollmentId}/progress`);

@@ -103,7 +103,8 @@ exports.getCourseById = async (req, res) => {
       include: {
         createdBy: { select: { id: true, firstName: true, lastName: true } },
         tags: { include: { tag: true } },
-        lessons: { orderBy: { order: 'asc' } }
+        lessons: { orderBy: { order: 'asc' } },
+        quizzes: true
       }
     });
 
