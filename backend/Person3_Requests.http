@@ -1,0 +1,140 @@
+### =========================================================================
+### Learnova - Person 3 (Learner & Payment) API Tests
+### Requires REST Client Extension in VS Code
+### =========================================================================
+
+@baseUrl = http://localhost:5000/api
+@token = YOUR_LEARNER_JWT_TOKEN
+
+
+### =========================================================================
+### LEARNER MODULE
+### =========================================================================
+
+### 1. Browse Published Courses (Public or Signed-in based on visibility rules)
+GET {{baseUrl}}/courses/published
+# Authorization: Bearer {{token}}
+
+
+### 2. Get Course Detail Page (Overview, Progress, Reviews)
+@courseIdToView = clt_course_id_here
+GET {{baseUrl}}/courses/{{courseIdToView}}/detail
+# Authorization: Bearer {{token}}
+
+
+### 3. Enroll In a Course
+POST {{baseUrl}}/enrollments
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseIdToView}}"
+}
+
+
+### 4. Get My Enrollments (My Courses Page)
+GET {{baseUrl}}/enrollments/my
+Authorization: Bearer {{token}}
+
+
+### 5. Get Course Progress for an Enrollment
+@enrollmentId = clt_enrollment_id_here
+GET {{baseUrl}}/enrollments/{{enrollmentId}}/progress
+Authorization: Bearer {{token}}
+
+
+### 6. List Course Reviews
+GET {{baseUrl}}/courses/{{courseIdToView}}/reviews
+
+
+### 7. Add Course Review
+POST {{baseUrl}}/courses/{{courseIdToView}}/reviews
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Excellent course structure and very informative!"
+}
+
+
+
+### =========================================================================
+### PLAYER MODULE
+### =========================================================================
+
+### 8. Mark Lesson Started / Completed (and update time spent)
+@lessonId = clt_lesson_id_here
+PATCH {{baseUrl}}/progress/lesson/{{lessonId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "isCompleted": true,
+  "timeSpentSeconds": 120,
+  "enrollmentId": "{{enrollmentId}}"
+}
+
+
+### 9. Load Lesson details for Player
+GET {{baseUrl}}/player/{{courseIdToView}}/{{lessonId}}
+Authorization: Bearer {{token}}
+
+
+### 10. Start a New Quiz Attempt
+@quizId = clt_quiz_id_here
+POST {{baseUrl}}/quizzes/{{quizId}}/attempt
+Authorization: Bearer {{token}}
+
+
+### 11. Submit Answer for one Question in an Attempt
+@attemptId = clt_attempt_id_here
+@questionId = clt_question_id_here
+@selectedOptionId = clt_option_id_here
+POST {{baseUrl}}/attempts/{{attemptId}}/answer
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "questionId": "{{questionId}}",
+  "selectedOptionId": "{{selectedOptionId}}"
+}
+
+
+### 12. Complete Quiz Attempt (Calculates points + badge)
+POST {{baseUrl}}/attempts/{{attemptId}}/complete
+Authorization: Bearer {{token}}
+
+
+
+### =========================================================================
+### PAYMENT MODULE
+### =========================================================================
+
+### 13. Create Razorpay/PayPal Order
+POST {{baseUrl}}/payments/create-order
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseIdToView}}"
+}
+
+
+### 14. Verify Webhook Signature -> Sets SUCCESS -> Creates Enrollment
+# You will get order_id and payment_id from Razorpay UI testing
+POST {{baseUrl}}/payments/verify
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "courseId": "{{courseIdToView}}",
+  "razorpay_order_id": "order_XXXXXX",
+  "razorpay_payment_id": "pay_XXXXXX",
+  "razorpay_signature": "SIGNATURE_HASH_HERE"
+}
+
+
+### 15. List User's Payment History
+GET {{baseUrl}}/payments/my
+Authorization: Bearer {{token}}
