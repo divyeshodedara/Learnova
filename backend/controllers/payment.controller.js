@@ -4,7 +4,7 @@ const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 
 /**
  * POST /api/payments/create-order
- * Create PayPal order
+ * Create PayPal order — blocks if there's already a PENDING or SUCCESS payment
  */
 exports.createOrder = async (req, res, next) => {
   try {
@@ -25,6 +25,26 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Already enrolled" });
     }
 
+    // Check for existing successful payment
+    const existingSuccess = await prisma.payment.findFirst({
+      where: { userId, courseId, status: "SUCCESS" },
+    });
+    if (existingSuccess) {
+      return res.status(400).json({ success: false, error: "Payment already completed" });
+    }
+
+    // Check for existing pending payment — don't create duplicates
+    const existingPending = await prisma.payment.findFirst({
+      where: { userId, courseId, status: "PENDING" },
+    });
+    if (existingPending) {
+      return res.status(400).json({
+        success: false,
+        error: "A pending payment already exists. Cancel it first to create a new one.",
+        pendingPaymentId: existingPending.id,
+      });
+    }
+
     // Create PayPal order request
     const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
     request.prefer("return=representation");
@@ -32,7 +52,7 @@ exports.createOrder = async (req, res, next) => {
       intent: 'CAPTURE',
       purchase_units: [{
         amount: {
-          currency_code: 'USD', // Change as appropriate
+          currency_code: 'USD',
           value: Number(course.price).toFixed(2)
         }
       }]
@@ -147,6 +167,86 @@ exports.getMyPayments = async (req, res, next) => {
     const payments = await prisma.payment.findMany({
       where: { userId },
       include: {
+        course: { select: { title: true, slug: true } },
+      },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json({ success: true, count: payments.length, data: payments });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/payments/status/:courseId
+ * Get current payment status for a course (for the logged-in user)
+ */
+exports.getPaymentStatus = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const { courseId } = req.params;
+
+    const payment = await prisma.payment.findFirst({
+      where: { userId, courseId },
+      orderBy: { createdAt: "desc" },
+    });
+
+    res.json({ success: true, data: payment });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/payments/cancel
+ * Cancel a PENDING payment
+ */
+exports.cancelPayment = async (req, res, next) => {
+  try {
+    const { paymentId } = req.body;
+    const userId = req.user.userId;
+
+    const payment = await prisma.payment.findFirst({
+      where: { id: paymentId, userId },
+    });
+
+    if (!payment) {
+      return res.status(404).json({ success: false, error: "Payment not found" });
+    }
+
+    if (payment.status !== "PENDING") {
+      return res.status(400).json({ success: false, error: "Only pending payments can be cancelled" });
+    }
+
+    const updated = await prisma.payment.update({
+      where: { id: paymentId },
+      data: { status: "FAILED", failureReason: "Cancelled by user" },
+    });
+
+    res.json({ success: true, data: updated });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * GET /api/payments/admin/all
+ * Admin: list all payments across all users
+ */
+exports.getAllPayments = async (req, res, next) => {
+  try {
+    const { status, userId: filterUserId, courseId } = req.query;
+
+    const where = {};
+    if (status) where.status = status;
+    if (filterUserId) where.userId = filterUserId;
+    if (courseId) where.courseId = courseId;
+
+    const payments = await prisma.payment.findMany({
+      where,
+      include: {
+        user: { select: { firstName: true, lastName: true, email: true } },
         course: { select: { title: true, slug: true } },
       },
       orderBy: { createdAt: "desc" },

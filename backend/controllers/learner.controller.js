@@ -54,8 +54,10 @@ exports.getCourseDetail = async (req, res, next) => {
           include: { tag: true },
         },
         lessons: {
-          where: { type: { not: "QUIZ" } }, // Optional: separate quizzes if necessary
           orderBy: { order: "asc" },
+          include: {
+            quizLesson: { include: { quiz: true } },
+          },
         },
         quizzes: true,
         _count: {
@@ -182,7 +184,24 @@ exports.getCourseProgress = async (req, res, next) => {
       where: { id },
       include: {
         course: {
-          select: { id: true, title: true, _count: { select: { lessons: true } } }
+          select: {
+            id: true,
+            title: true,
+            lessons: {
+              orderBy: { order: "asc" },
+              select: {
+                id: true,
+                title: true,
+                type: true,
+                order: true,
+                duration: true,
+                quizLesson: {
+                  select: { quizId: true },
+                },
+              },
+            },
+            _count: { select: { lessons: true } },
+          },
         },
         lessonProgress: true,
       },

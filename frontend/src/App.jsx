@@ -1,12 +1,24 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { ThemeProvider } from "./components/theme-provider";
+import { Toaster } from "./components/ui/sonner";
 import { useAuth } from "./hooks/useAuth";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import Dashboard from "./pages/Dashboard";
-import ComingSoon from "./pages/ComingSoon";
 import DashboardLayout from "./components/layout/DashboardLayout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CoursesPage from "./pages/courses/CoursesPage";
+import AdminCourseDetailPage from "./pages/courses/CourseDetailPage";
+import UsersPage from "./pages/admin/UsersPage";
+import ReportingPage from "./pages/reporting/ReportingPage";
+import BrowsePage from "./pages/learner/BrowsePage";
+import LearnerCourseDetailPage from "./pages/learner/CourseDetailPage";
+import MyCoursesPage from "./pages/learner/MyCoursesPage";
+import PlayerPage from "./pages/learner/PlayerPage";
+import PaymentsPage from "./pages/learner/PaymentsPage";
+import AdminPaymentsPage from "./pages/admin/PaymentsPage";
+import AcceptInvitePage from "./pages/AcceptInvitePage";
+import NotFound from "./pages/NotFound";
 
 function App() {
   const { user, loading, logout, isAdmin, isBackoffice } = useAuth();
@@ -17,6 +29,7 @@ function App() {
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/accept-invite/:token" element={<AcceptInvitePage />} />
 
         <Route
           element={
@@ -31,7 +44,15 @@ function App() {
             path="/courses"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <ComingSoon title="Courses Management" description="Create and manage your courses" />
+                <CoursesPage />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/courses/:id"
+            element={
+              <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
+                <AdminCourseDetailPage />
               </ProtectedRoute>
             }
           />
@@ -40,7 +61,7 @@ function App() {
             path="/users"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN"]}>
-                <ComingSoon title="User Management" description="Manage platform users and roles" />
+                <UsersPage />
               </ProtectedRoute>
             }
           />
@@ -49,35 +70,30 @@ function App() {
             path="/reporting"
             element={
               <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN", "INSTRUCTOR"]}>
-                <ComingSoon title="Reporting Dashboard" description="Track learner progress and analytics" />
+                <ReportingPage />
               </ProtectedRoute>
             }
           />
 
           <Route
-            path="/browse"
+            path="/admin/payments"
             element={
-              <ComingSoon title="Browse Courses" description="Discover and enroll in published courses" />
+              <ProtectedRoute user={user} loading={false} allowedRoles={["ADMIN"]}>
+                <AdminPaymentsPage />
+              </ProtectedRoute>
             }
           />
 
-          <Route
-            path="/my-courses"
-            element={
-              <ComingSoon title="My Courses" description="View your enrolled courses and track progress" />
-            }
-          />
-
-          <Route
-            path="/payments"
-            element={
-              <ComingSoon title="Payments" description="View your payment history" />
-            }
-          />
+          <Route path="/browse" element={<BrowsePage />} />
+          <Route path="/courses/:id/detail" element={<LearnerCourseDetailPage />} />
+          <Route path="/my-courses" element={<MyCoursesPage />} />
+          <Route path="/player/:courseId" element={<PlayerPage />} />
+          <Route path="/payments" element={<PaymentsPage />} />
         </Route>
 
-        <Route path="*" element={<Navigate to="/dashboard" replace />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
+      <Toaster richColors position="top-right" />
     </ThemeProvider>
   );
 }

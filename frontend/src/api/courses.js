@@ -8,3 +8,5 @@ export const togglePublish = (id, data) => api.patch(`/courses/${id}/publish`, d
 export const deleteCourse = (id) => api.delete(`/courses/${id}`);
 export const getPublishedCourses = () => api.get("/courses/published");
 export const getCourseDetail = (id) => api.get(`/courses/${id}/detail`);
+export const getInvitations = (id) => api.get(`/courses/${id}/invitations`);
+export const sendInvitation = (id, email) => api.post(`/courses/${id}/invitations`, { email });

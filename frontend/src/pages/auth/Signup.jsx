@@ -13,6 +13,7 @@ import { signupUser } from "../../api/auth";
 import { Button } from "../../components/ui/Button";
 import { Input } from "../../components/ui/Input";
 import { ModeToggle } from "../../components/mode-toggle";
+import { showSuccess } from "@/lib/toast";
 import styles from "./auth.module.css";
 
 function getPasswordStrength(password) {
@@ -55,6 +56,7 @@ export default function Signup() {
     setError("");
     try {
       await signupUser(formData);
+      showSuccess("Account created! Please sign in.");
       navigate("/login");
     } catch (err) {
       setError(

@@ -1,6 +1,7 @@
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const prisma = require("../lib/prisma.js");
+const { getBadgeLevel, getMaxAchievablePoints, BADGE_TIERS } = require("../utils/badgeCalculator");
 
 const SALT_ROUNDS = 10;
 
@@ -113,7 +114,28 @@ const me = async (req, res, next) => {
         .json({ success: false, error: "User not found" });
     }
 
-    return res.status(200).json({ success: true, user: sanitiseUser(user) });
+    // Recalculate badge scoped to user's enrolled courses
+    const currentBadge = await getBadgeLevel(user.totalPoints, user.id);
+    if (currentBadge !== user.badgeLevel) {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { badgeLevel: currentBadge },
+      });
+      user.badgeLevel = currentBadge;
+    }
+
+    const maxPoints = await getMaxAchievablePoints(user.id);
+    const safe = sanitiseUser(user);
+    safe.maxAchievablePoints = maxPoints;
+    safe.pointsPercent = maxPoints > 0 ? Math.round((user.totalPoints / maxPoints) * 100) : 0;
+
+    // Find the next badge tier
+    const pct = maxPoints > 0 ? (user.totalPoints / maxPoints) * 100 : 0;
+    const nextTier = [...BADGE_TIERS].reverse().find((t) => t.pct > pct);
+    safe.nextBadge = nextTier ? nextTier.level : null;
+    safe.nextBadgePct = nextTier ? nextTier.pct : 100;
+
+    return res.status(200).json({ success: true, user: safe });
   } catch (err) {
     next(err);
   }

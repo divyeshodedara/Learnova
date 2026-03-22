@@ -43,26 +43,28 @@ exports.addLesson = async (req, res) => {
       fileKey = req.file.filename;
     }
 
-    const lesson = await prisma.lesson.create({
-      data: {
-        courseId,
-        title,
-        type: type || "VIDEO",
-        description,
-        order: order ? parseInt(order) : 0,
-        videoUrl,
-        duration: duration ? parseInt(duration) : undefined,
-        fileUrl,
-        fileKey,
-        allowDownload: allowDownload === 'true' || allowDownload === true,
-        responsibleName
-      }
-    });
+    const data = {
+      courseId,
+      title,
+      type: type || "VIDEO",
+      order: order ? parseInt(order) : 0,
+      allowDownload: allowDownload === 'true' || allowDownload === true,
+    };
+
+    // Only set optional fields if they have actual values
+    if (description) data.description = description;
+    if (videoUrl) data.videoUrl = videoUrl;
+    if (duration) data.duration = parseInt(duration);
+    if (responsibleName) data.responsibleName = responsibleName;
+    if (fileUrl) data.fileUrl = fileUrl;
+    if (fileKey) data.fileKey = fileKey;
+
+    const lesson = await prisma.lesson.create({ data });
 
     res.status(201).json({ success: true, data: lesson });
   } catch (error) {
     console.error("Error adding lesson:", error);
-    res.status(500).json({ success: false, error: "Failed to add lesson" });
+    res.status(500).json({ success: false, error: error.message || "Failed to add lesson" });
   }
 };
 

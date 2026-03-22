@@ -11,6 +11,8 @@ import {
   PanelLeft,
   CreditCard,
   Settings,
+  Award,
+  Star,
 } from "lucide-react";
 import styles from "./layout.module.css";
 
@@ -18,6 +20,7 @@ const adminNav = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Courses", href: "/courses", icon: BookOpen },
   { label: "Users", href: "/users", icon: Users },
+  { label: "Payments", href: "/admin/payments", icon: CreditCard },
   { label: "Reporting", href: "/reporting", icon: BarChart3 },
 ];
 
@@ -102,6 +105,27 @@ export default function Sidebar({ user, collapsed, onToggle }) {
       </nav>
 
       <div className={styles.sidebarFooter}>
+        {user?.role === "LEARNER" && !collapsed && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: 8,
+            padding: "8px 12px", marginBottom: 8,
+            borderRadius: 8, background: "var(--muted, #f4f4f5)",
+          }}>
+            <Award style={{ width: 16, height: 16, color: user?.badgeLevel ? "#a855f7" : "#9ca3af", flexShrink: 0 }} />
+            <span style={{ fontSize: 12, fontWeight: 600 }}>{user?.badgeLevel || "No Badge"}</span>
+            <span style={{ marginLeft: "auto", fontSize: 11, display: "flex", alignItems: "center", gap: 2 }}>
+              <Star style={{ width: 12, height: 12, color: "#eab308" }} />
+              {user?.totalPoints ?? 0}
+            </span>
+          </div>
+        )}
+        {user?.role === "LEARNER" && collapsed && (
+          <div title={`${user?.badgeLevel || "No Badge"} - ${user?.totalPoints ?? 0} pts`} style={{
+            display: "flex", justifyContent: "center", marginBottom: 8,
+          }}>
+            <Award style={{ width: 20, height: 20, color: user?.badgeLevel ? "#a855f7" : "#9ca3af" }} />
+          </div>
+        )}
         <div className={styles.userCard}>
           <div className={styles.userAvatar}>
             {user?.firstName?.[0]}

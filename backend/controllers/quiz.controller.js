@@ -12,14 +12,32 @@ const createQuiz = async (req, res) => {
       return res.status(404).json({ error: "Course not found" });
     }
 
-    const quiz = await prisma.quiz.create({
-      data: {
-        title,
-        description,
-        courseId,
-      },
+    // Get the next lesson order for this course
+    const lastLesson = await prisma.lesson.findFirst({
+      where: { courseId },
+      orderBy: { order: 'desc' },
     });
-    res.status(201).json(quiz);
+    const nextOrder = (lastLesson?.order ?? 0) + 1;
+
+    // Create quiz + lesson + quizLesson link in a transaction
+    const result = await prisma.$transaction(async (tx) => {
+      const quiz = await tx.quiz.create({
+        data: { title, description, courseId },
+      });
+      const lesson = await tx.lesson.create({
+        data: {
+          courseId,
+          title,
+          type: 'QUIZ',
+          order: nextOrder,
+        },
+      });
+      await tx.quizLesson.create({
+        data: { lessonId: lesson.id, quizId: quiz.id },
+      });
+      return quiz;
+    });
+    res.status(201).json(result);
   } catch (error) {
     console.error(error); // Log internal error for debugging
     res.status(500).json({ error: "Internal Server Error" });
@@ -84,7 +102,14 @@ const deleteQuiz = async (req, res) => {
       return res.status(404).json({ error: "Quiz not found" });
     }
 
-    await prisma.quiz.delete({ where: { id } });
+    // Delete linked lesson + quiz in transaction (QuizLesson cascades)
+    const quizLesson = await prisma.quizLesson.findUnique({ where: { quizId: id } });
+    await prisma.$transaction(async (tx) => {
+      await tx.quiz.delete({ where: { id } });
+      if (quizLesson) {
+        await tx.lesson.delete({ where: { id: quizLesson.lessonId } }).catch(() => {});
+      }
+    });
     res.json({ message: "Quiz deleted successfully" });
   } catch (error) {
     console.error(error);

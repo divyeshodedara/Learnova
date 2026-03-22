@@ -91,7 +91,23 @@ exports.getLessonForPlayer = async (req, res, next) => {
       where: { id: lessonId },
       include: {
         attachments: true,
-        quizLesson: { include: { quiz: true } },
+        quizLesson: {
+          include: {
+            quiz: {
+              include: {
+                questions: {
+                  orderBy: { order: "asc" },
+                  include: {
+                    options: {
+                      orderBy: { order: "asc" },
+                      select: { id: true, text: true, order: true },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     });
 
@@ -122,6 +138,10 @@ exports.startQuizAttempt = async (req, res, next) => {
     const previousAttempts = await prisma.quizAttempt.count({
       where: { quizId: id, userId },
     });
+
+    if (previousAttempts >= 3) {
+      return res.status(400).json({ success: false, error: "Maximum 3 attempts allowed" });
+    }
 
     const attempt = await prisma.quizAttempt.create({
       data: {
@@ -232,9 +252,8 @@ exports.completeQuizAttempt = async (req, res, next) => {
       },
     });
 
-    // The specification implies we give rewards on completion based on attempt number.
-    // We will grant rewards regardless of score.
-    await awardPoints(userId, attempt.quizId, attempt.id, attempt.attemptNumber);
+    // Award points scaled by score percentage
+    await awardPoints(userId, attempt.quizId, attempt.id, attempt.attemptNumber, scorePercent);
 
     res.json({ success: true, data: completedAttempt });
   } catch (error) {

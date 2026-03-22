@@ -491,7 +491,7 @@ model Payment {
   provider  PaymentProvider
   status    PaymentStatus   @default(PENDING)
   amount    Decimal         @db.Decimal(10, 2)
-  currency  String          @default("INR")
+  currency  String          @default("USD")
 
   // Provider-specific fields
   providerOrderId   String? // Razorpay order_id / PayPal order id — set before redirect

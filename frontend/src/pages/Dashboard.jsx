@@ -10,6 +10,8 @@ import {
   TrendingUp,
   Clock,
   CheckCircle2,
+  Award,
+  Star,
 } from "lucide-react";
 import { getCourses } from "../api/courses";
 import { getOverview } from "../api/reporting";
@@ -155,7 +157,7 @@ function InstructorDashboard() {
   );
 }
 
-function LearnerDashboard() {
+function LearnerDashboard({ user }) {
   const [enrollments, setEnrollments] = useState([]);
 
   useEffect(() => {
@@ -168,8 +170,54 @@ function LearnerDashboard() {
   const completed = enrollments.filter((e) => e.status === "COMPLETED").length;
   const yetToStart = enrollments.filter((e) => e.status === "YET_TO_START").length;
 
+  const BADGE_COLORS = {
+    MASTER: "#eab308",
+    EXPERT: "#a855f7",
+    SPECIALIST: "#3b82f6",
+    ACHIEVER: "#22c55e",
+    EXPLORER: "#14b8a6",
+    NEWBIE: "#6b7280",
+  };
+
   return (
     <>
+      {/* Badge & Points Banner */}
+      <div className={styles.statCard} style={{ marginBottom: "1rem", padding: "1.25rem" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%",
+            background: BADGE_COLORS[user?.badgeLevel] || "#e5e7eb",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
+            <Award style={{ width: 28, height: 28, color: "white" }} />
+          </div>
+          <div>
+            <p style={{ fontSize: "0.75rem", color: "var(--muted-foreground, #6b7280)" }}>Current Badge</p>
+            <p style={{ fontSize: "1.25rem", fontWeight: 700 }}>
+              {user?.badgeLevel || "No Badge Yet"}
+            </p>
+          </div>
+          <div style={{ marginLeft: "auto", textAlign: "right" }}>
+            <p style={{ fontSize: "0.75rem", color: "var(--muted-foreground, #6b7280)" }}>Total Points</p>
+            <p style={{ fontSize: "1.5rem", fontWeight: 700, display: "flex", alignItems: "center", gap: 4 }}>
+              <Star style={{ width: 20, height: 20, color: "#eab308" }} />
+              {user?.totalPoints ?? 0}{user?.maxAchievablePoints > 0 && <span style={{ fontSize: "0.75rem", fontWeight: 400, color: "var(--muted-foreground, #6b7280)" }}>/ {user.maxAchievablePoints}</span>}
+            </p>
+          </div>
+        </div>
+        {user?.maxAchievablePoints > 0 && (
+          <div style={{ marginTop: 12 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.7rem", color: "var(--muted-foreground, #6b7280)", marginBottom: 4 }}>
+              <span>{user.pointsPercent ?? 0}% of maximum</span>
+              {user.nextBadge && <span>Next: {user.nextBadge} at {user.nextBadgePct}%</span>}
+            </div>
+            <div style={{ height: 8, borderRadius: 4, background: "#e5e7eb", overflow: "hidden" }}>
+              <div style={{ height: "100%", borderRadius: 4, background: BADGE_COLORS[user?.badgeLevel] || "#6b7280", width: `${Math.min(user.pointsPercent ?? 0, 100)}%`, transition: "width 0.5s" }} />
+            </div>
+          </div>
+        )}
+      </div>
+
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <div className={styles.statIcon}>
@@ -234,7 +282,7 @@ export default function Dashboard({ user }) {
       </div>
       {user?.role === "ADMIN" && <AdminDashboard />}
       {user?.role === "INSTRUCTOR" && <InstructorDashboard />}
-      {user?.role === "LEARNER" && <LearnerDashboard />}
+      {user?.role === "LEARNER" && <LearnerDashboard user={user} />}
     </div>
   );
 }
