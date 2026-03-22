@@ -5,9 +5,6 @@ const { getBadgeLevel, getMaxAchievablePoints, BADGE_TIERS } = require("../utils
 
 const SALT_ROUNDS = 10;
 
-/**
- * Helper — sign a JWT with the standard payload.
- */
 const signToken = (user) =>
   jwt.sign(
     { userId: user.id, email: user.email, role: user.role },
@@ -15,20 +12,15 @@ const signToken = (user) =>
     { expiresIn: process.env.JWT_EXPIRES_IN || "7d" }
   );
 
-/**
- * Helper — strip sensitive fields before sending a user object.
- */
 const sanitiseUser = (user) => {
   const { passwordHash, ...safe } = user;
   return safe;
 };
 
-// ─── POST /api/auth/signup ───────────────────────────────
 const signup = async (req, res, next) => {
   try {
     const { firstName, lastName, email, password } = req.body;
 
-    // Check for duplicate email
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
       return res
@@ -36,7 +28,6 @@ const signup = async (req, res, next) => {
         .json({ success: false, error: "Email is already registered" });
     }
 
-    // Hash password & create user
     const passwordHash = await bcrypt.hash(password, SALT_ROUNDS);
     const user = await prisma.user.create({
       data: { firstName, lastName, email, passwordHash, role: "LEARNER" },
@@ -54,14 +45,12 @@ const signup = async (req, res, next) => {
   }
 };
 
-// ─── POST /api/auth/login ────────────────────────────────
 const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
     const user = await prisma.user.findUnique({ where: { email } });
 
-    // Generic message — never reveal whether email or password was wrong
     if (!user) {
       return res
         .status(401)
@@ -75,7 +64,6 @@ const login = async (req, res, next) => {
         .json({ success: false, error: "Invalid email or password" });
     }
 
-    // Active check
     if (!user.isActive) {
       return res
         .status(403)
@@ -101,7 +89,6 @@ const login = async (req, res, next) => {
   }
 };
 
-// ─── GET /api/auth/me (protected) ────────────────────────
 const me = async (req, res, next) => {
   try {
     const user = await prisma.user.findUnique({
@@ -114,7 +101,6 @@ const me = async (req, res, next) => {
         .json({ success: false, error: "User not found" });
     }
 
-    // Recalculate badge scoped to user's enrolled courses
     const currentBadge = await getBadgeLevel(user.totalPoints, user.id);
     if (currentBadge !== user.badgeLevel) {
       await prisma.user.update({
@@ -129,7 +115,6 @@ const me = async (req, res, next) => {
     safe.maxAchievablePoints = maxPoints;
     safe.pointsPercent = maxPoints > 0 ? Math.round((user.totalPoints / maxPoints) * 100) : 0;
 
-    // Find the next badge tier
     const pct = maxPoints > 0 ? (user.totalPoints / maxPoints) * 100 : 0;
     const nextTier = [...BADGE_TIERS].reverse().find((t) => t.pct > pct);
     safe.nextBadge = nextTier ? nextTier.level : null;
@@ -141,4 +126,37 @@ const me = async (req, res, next) => {
   }
 };
 
-module.exports = { signup, login, me };
+const updateProfile = async (req, res, next) => {
+  try {
+    const userId = req.user.userId;
+    const { firstName, lastName, avatarUrl, currentPassword, newPassword } = req.body;
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) {
+      return res.status(404).json({ success: false, error: "User not found" });
+    }
+
+    const data = {};
+    if (firstName !== undefined) data.firstName = firstName;
+    if (lastName !== undefined) data.lastName = lastName;
+    if (avatarUrl !== undefined) data.avatarUrl = avatarUrl;
+
+    if (newPassword) {
+      if (!currentPassword) {
+        return res.status(400).json({ success: false, error: "Current password is required" });
+      }
+      const match = await bcrypt.compare(currentPassword, user.passwordHash);
+      if (!match) {
+        return res.status(400).json({ success: false, error: "Current password is incorrect" });
+      }
+      data.passwordHash = await bcrypt.hash(newPassword, SALT_ROUNDS);
+    }
+
+    const updated = await prisma.user.update({ where: { id: userId }, data });
+    return res.json({ success: true, user: sanitiseUser(updated) });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { signup, login, me, updateProfile };

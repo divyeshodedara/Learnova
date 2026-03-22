@@ -8,7 +8,6 @@ async function main() {
   const passwordHash = await bcrypt.hash("Admin@1234", 10);
   const instructorPasswordHash = await bcrypt.hash("Instructor@1234", 10);
 
-  // 1. Seed Admin
   const admin = await prisma.user.upsert({
     where: { email: "admin@learnova.com" },
     update: {},
@@ -22,7 +21,6 @@ async function main() {
   });
   console.log(`Admin seeded: ${admin.email}`);
 
-  // 2. Seed Instructor (for testing)
   const instructor = await prisma.user.upsert({
     where: { email: "instructor@learnova.com" },
     update: {},

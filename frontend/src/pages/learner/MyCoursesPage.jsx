@@ -60,7 +60,6 @@ export default function MyCoursesPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           My Courses
@@ -82,7 +81,6 @@ export default function MyCoursesPage() {
                 key={enrollment.id}
                 className="group overflow-hidden transition-all hover:shadow-md"
               >
-                {/* Cover Image */}
                 <div className="relative h-40 w-full overflow-hidden bg-muted">
                   {course.coverImageUrl ? (
                     <img
@@ -146,7 +144,6 @@ export default function MyCoursesPage() {
           })}
         </div>
       ) : (
-        /* Empty State */
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-20">
           <GraduationCap size={48} className="text-muted-foreground/40" />
           <p className="mt-4 text-lg font-medium text-foreground">

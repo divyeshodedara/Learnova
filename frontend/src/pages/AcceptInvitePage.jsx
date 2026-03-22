@@ -6,7 +6,7 @@ import api from "@/api/axios";
 
 export default function AcceptInvitePage() {
   const { token } = useParams();
-  const [status, setStatus] = useState("loading"); // loading | success | error
+  const [status, setStatus] = useState("loading");
   const [message, setMessage] = useState("");
 
   useEffect(() => {

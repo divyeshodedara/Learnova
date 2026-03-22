@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   BookOpen,
@@ -51,6 +51,7 @@ function getRoleBadgeClass(role) {
 
 export default function Sidebar({ user, collapsed, onToggle }) {
   const location = useLocation();
+  const navigate = useNavigate();
   const navItems = getNavItems(user?.role);
 
   return (
@@ -126,10 +127,22 @@ export default function Sidebar({ user, collapsed, onToggle }) {
             <Award style={{ width: 20, height: 20, color: user?.badgeLevel ? "#a855f7" : "#9ca3af" }} />
           </div>
         )}
-        <div className={styles.userCard}>
+        <div
+          className={styles.userCard}
+          onClick={() => navigate("/profile")}
+          style={{ cursor: "pointer" }}
+          title="Profile Settings"
+        >
           <div className={styles.userAvatar}>
-            {user?.firstName?.[0]}
-            {user?.lastName?.[0]}
+            {user?.avatarUrl ? (
+              <img
+                src={user.avatarUrl}
+                alt="avatar"
+                style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: "50%" }}
+              />
+            ) : (
+              <>{user?.firstName?.[0]}{user?.lastName?.[0]}</>
+            )}
           </div>
           {!collapsed && (
             <div className={styles.userInfo}>

@@ -12,7 +12,6 @@ router.post("/cancel", paymentController.cancelPayment);
 router.get("/my", paymentController.getMyPayments);
 router.get("/status/:courseId", paymentController.getPaymentStatus);
 
-// Admin-only
 router.get("/admin/all", authorize("ADMIN"), paymentController.getAllPayments);
 
 module.exports = router;

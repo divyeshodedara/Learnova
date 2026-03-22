@@ -5,11 +5,9 @@ const authenticate = require("../middlewares/auth");
 
 router.use(authenticate);
 
-// Player / Lesson Progress
 router.patch("/progress/lesson/:id", playerController.markLessonProgress);
 router.get("/player/:courseId/:lessonId", playerController.getLessonForPlayer);
 
-// Quizzes / Attempts
 router.post("/quizzes/:id/attempt", playerController.startQuizAttempt);
 router.post("/attempts/:id/answer", playerController.submitQuizAnswer);
 router.post("/attempts/:id/complete", playerController.completeQuizAttempt);

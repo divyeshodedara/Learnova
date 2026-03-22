@@ -5,7 +5,6 @@ const authenticate = require('../middlewares/auth');
 
 router.use(authenticate);
 
-// Tag Routes
 router.get('/', tagController.getTags);
 router.post('/', tagController.createTag);
 

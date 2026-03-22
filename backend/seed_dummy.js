@@ -4,7 +4,6 @@ const prisma = require("./lib/prisma");
 async function main() {
   console.log("Seeding database with dummy data for Testing...");
 
-  // 1. Create Instructor
   const instructor = await prisma.user.upsert({
     where: { email: "instructor2@example.com" },
     update: {},
@@ -18,7 +17,6 @@ async function main() {
   });
   console.log(`Instructor ID: ${instructor.id}`);
 
-  // 2. Create Course
   const course = await prisma.course.create({
     data: {
       title: "Advanced Backend Testing",
@@ -31,7 +29,6 @@ async function main() {
   });
   console.log(`Course ID: ${course.id}`);
 
-  // 3. Create a Quiz (to test adding questions/options to an existing quiz)
   const quiz = await prisma.quiz.create({
     data: {
       title: "Pre-seeded Quiz",
@@ -41,7 +38,6 @@ async function main() {
   });
   console.log(`Quiz ID: ${quiz.id}`);
 
-  // 4. Create a Question (to test adding options to an existing question)
   const question = await prisma.question.create({
     data: {
       text: "Pre-seeded Question?",

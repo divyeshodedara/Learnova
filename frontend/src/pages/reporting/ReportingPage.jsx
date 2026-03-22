@@ -25,7 +25,6 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
 
-/* ─── helpers ─── */
 const fmtTime = (seconds) => {
   if (!seconds && seconds !== 0) return "-";
   const s = Number(seconds);
@@ -63,21 +62,18 @@ export default function ReportingPage() {
   const [courseFilter, setCourseFilter] = useState("ALL");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
-  /* ─── fetch overview ─── */
   useEffect(() => {
     getOverview()
       .then((r) => setOverview(r.data.data || r.data))
       .catch(() => {});
   }, []);
 
-  /* ─── fetch courses for filter ─── */
   useEffect(() => {
     getCourses()
       .then((r) => setCourses(r.data.data || r.data || []))
       .catch(() => {});
   }, []);
 
-  /* ─── fetch progress rows ─── */
   const fetchProgress = useCallback(async () => {
     setLoading(true);
     try {
@@ -97,13 +93,11 @@ export default function ReportingPage() {
 
   return (
     <div className="space-y-6">
-      {/* header */}
       <div>
         <h1 className="text-2xl font-bold tracking-tight">Reporting</h1>
         <p className="text-muted-foreground text-sm">Track learner progress and analytics</p>
       </div>
 
-      {/* stat cards */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
         {statCards.map(({ key, label, icon: Icon, suffix }) => (
           <div key={key} className="rounded-lg border bg-card p-4 space-y-2">
@@ -122,7 +116,6 @@ export default function ReportingPage() {
 
       <Separator />
 
-      {/* filters */}
       <div className="flex flex-wrap items-center gap-3">
         <Select value={courseFilter} onValueChange={setCourseFilter}>
           <SelectTrigger className="w-[220px]"><SelectValue placeholder="All Courses" /></SelectTrigger>
@@ -144,7 +137,6 @@ export default function ReportingPage() {
         </Select>
       </div>
 
-      {/* progress table */}
       <div className="rounded-lg border">
         <Table>
           <TableHeader>

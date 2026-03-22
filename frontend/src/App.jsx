@@ -18,6 +18,7 @@ import PlayerPage from "./pages/learner/PlayerPage";
 import PaymentsPage from "./pages/learner/PaymentsPage";
 import AdminPaymentsPage from "./pages/admin/PaymentsPage";
 import AcceptInvitePage from "./pages/AcceptInvitePage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 function App() {
@@ -89,6 +90,7 @@ function App() {
           <Route path="/my-courses" element={<MyCoursesPage />} />
           <Route path="/player/:courseId" element={<PlayerPage />} />
           <Route path="/payments" element={<PaymentsPage />} />
+          <Route path="/profile" element={<ProfilePage />} />
         </Route>
 
         <Route path="*" element={<NotFound />} />

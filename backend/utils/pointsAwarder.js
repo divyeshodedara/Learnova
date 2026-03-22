@@ -1,14 +1,8 @@
 const prisma = require("../lib/prisma");
 const { getBadgeLevel } = require("./badgeCalculator");
 
-/**
- * Awards points for a quiz attempt based on the attempt number and score.
- * Points = baseReward × (scorePercent / 100)
- * Badge is calculated as percentage of total achievable points.
- */
 const awardPoints = async (userId, quizId, attemptId, attemptNumber, scorePercent = 0) => {
   try {
-    // Look up reward for this attempt number
     const reward = await prisma.quizReward.findFirst({
       where: {
         quizId,
@@ -18,11 +12,9 @@ const awardPoints = async (userId, quizId, attemptId, attemptNumber, scorePercen
 
     if (!reward || reward.points <= 0) return;
 
-    // Scale points by score percentage
     const earnedPoints = Math.round(reward.points * (scorePercent / 100));
     if (earnedPoints <= 0) return;
 
-    // Award points
     await prisma.pointTransaction.create({
       data: {
         userId,
@@ -32,7 +24,6 @@ const awardPoints = async (userId, quizId, attemptId, attemptNumber, scorePercen
       },
     });
 
-    // Update user's total points and badge level
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) return;
 
@@ -47,7 +38,6 @@ const awardPoints = async (userId, quizId, attemptId, attemptNumber, scorePercen
       },
     });
 
-    // Update the attempt to reflect points earned
     await prisma.quizAttempt.update({
       where: { id: attemptId },
       data: {

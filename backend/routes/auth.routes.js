@@ -2,7 +2,7 @@ const { Router } = require("express");
 const { z } = require("zod");
 const validate = require("../middlewares/validate.js");
 const authenticate = require("../middlewares/auth.js");
-const { signup, login, me } = require("../controllers/auth.controller.js");
+const { signup, login, me, updateProfile } = require("../controllers/auth.controller.js");
 
 const router = Router();
 
@@ -27,5 +27,6 @@ const loginSchema = z.object({
 router.post("/signup", validate(signupSchema), signup);
 router.post("/login", validate(loginSchema), login);
 router.get("/me", authenticate, me);
+router.patch("/me", authenticate, updateProfile);
 
 module.exports = router;

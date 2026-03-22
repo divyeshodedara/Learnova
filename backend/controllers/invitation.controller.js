@@ -1,15 +1,13 @@
 const prisma = require("../lib/prisma");
-const sendEmail = require("../utils/email"); // assuming user implemented this
+const sendEmail = require("../utils/email");
 const crypto = require("crypto");
 
 const inviteUser = async (req, res) => {
   try {
     const { id: courseId } = req.params;
     const { email } = req.body;
-    // user who is inviting - attached to req.user by auth middleware
-    const invitedById = req.user.id; 
+    const invitedById = req.user.userId;
 
-    // Check if duplicate invitation
     const existing = await prisma.invitation.findUnique({
       where: {
         courseId_email: {
@@ -28,16 +26,14 @@ const inviteUser = async (req, res) => {
         courseId,
         email,
         invitedById,
-        // token is default(cuid()) or uuid
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
       },
       include: {
         course: true,
       },
     });
 
-    // Send Email
-    const inviteLink = `${process.env.FRONTEND_URL || "http://localhost:3000"}/accept-invite/${invitation.token}`;
+    const inviteLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/accept-invite/${invitation.token}`;
     await sendEmail({
       to: email,
       subject: `Invitation to join course: ${invitation.course.title}`,
@@ -81,16 +77,13 @@ const acceptInvite = async (req, res) => {
       return res.status(400).json({ error: "Invitation expired" });
     }
 
-    // Mark accepted
     await prisma.invitation.update({
       where: { id: invitation.id },
       data: { acceptedAt: new Date() },
     });
 
-    // Logic to enroll user if they exist in DB with that email could go here
     const user = await prisma.user.findUnique({ where: { email: invitation.email } });
     if (user) {
-        // Enroll them
         await prisma.enrollment.create({
             data: {
                 userId: user.id,

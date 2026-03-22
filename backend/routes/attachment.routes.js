@@ -5,7 +5,6 @@ const authenticate = require('../middlewares/auth');
 
 router.use(authenticate);
 
-// Attachment Routes
 router.delete('/:id', lessonController.deleteAttachment);
 
 module.exports = router;

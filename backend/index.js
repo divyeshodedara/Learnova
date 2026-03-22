@@ -19,13 +19,11 @@ const errorHandler = require("./middlewares/errorHandler.js");
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-//Middleware
-
 const cookieParser = require("cookie-parser");
 app.use(cors({ origin: true, credentials: true })); 
 app.use(cookieParser());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: "10mb" }));
+app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
 app.get("/", (req, res) => {
   res.json({ message: "Learnova API is running" });
@@ -45,7 +43,7 @@ app.use("/api/admin", adminRoutes);
 
 app.use("/api", quizRoutes);
 app.use("/api/reporting", reportingRoutes);
-app.use("/api/invitations", invitationRoutes);
+app.use("/api", invitationRoutes);
 
 app.use((req, res) => {
   res.status(404).json({ error: "Route not found" });

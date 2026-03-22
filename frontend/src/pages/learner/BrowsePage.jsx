@@ -88,7 +88,6 @@ export default function BrowsePage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Browse Courses
@@ -98,7 +97,6 @@ export default function BrowsePage() {
         </p>
       </div>
 
-      {/* Course Grid */}
       <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {loading
           ? Array.from({ length: 6 }).map((_, i) => (
@@ -110,7 +108,6 @@ export default function BrowsePage() {
                 className="group cursor-pointer overflow-hidden transition-all hover:shadow-md hover:-translate-y-0.5"
                 onClick={() => navigate(`/courses/${course.id}/detail`)}
               >
-                {/* Cover Image */}
                 <div className="relative h-44 w-full overflow-hidden bg-muted">
                   {course.coverImageUrl ? (
                     <img
@@ -134,7 +131,6 @@ export default function BrowsePage() {
                   </div>
                 </div>
 
-                {/* Card Body */}
                 <CardHeader className="pb-2">
                   <h3 className="line-clamp-1 text-base font-semibold leading-tight text-foreground">
                     {course.title}
@@ -174,7 +170,6 @@ export default function BrowsePage() {
             ))}
       </div>
 
-      {/* Empty State */}
       {!loading && courses.length === 0 && (
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-20">
           <GraduationCap size={48} className="text-muted-foreground/40" />

@@ -2,10 +2,7 @@ const prisma = require("../lib/prisma");
 const paypal = require("../lib/paypal");
 const checkoutNodeJssdk = require('@paypal/checkout-server-sdk');
 
-/**
- * POST /api/payments/create-order
- * Create PayPal order — blocks if there's already a PENDING or SUCCESS payment
- */
+
 exports.createOrder = async (req, res, next) => {
   try {
     const { courseId } = req.body;
@@ -16,7 +13,6 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Invalid course or not paid" });
     }
 
-    // Check if already enrolled
     const existingEnrollment = await prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
     });
@@ -25,7 +21,6 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Already enrolled" });
     }
 
-    // Check for existing successful payment
     const existingSuccess = await prisma.payment.findFirst({
       where: { userId, courseId, status: "SUCCESS" },
     });
@@ -33,7 +28,7 @@ exports.createOrder = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Payment already completed" });
     }
 
-    // Check for existing pending payment — don't create duplicates
+
     const existingPending = await prisma.payment.findFirst({
       where: { userId, courseId, status: "PENDING" },
     });
@@ -45,7 +40,6 @@ exports.createOrder = async (req, res, next) => {
       });
     }
 
-    // Create PayPal order request
     const request = new checkoutNodeJssdk.orders.OrdersCreateRequest();
     request.prefer("return=representation");
     request.requestBody({
@@ -58,10 +52,8 @@ exports.createOrder = async (req, res, next) => {
       }]
     });
 
-    // Execute order creation
     const order = await paypal.client().execute(request);
 
-    // Create pending payment record
     const payment = await prisma.payment.create({
       data: {
         userId,
@@ -85,16 +77,11 @@ exports.createOrder = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/payments/verify
- * Capture PayPal Order and create Enrollment
- */
 exports.verifyPayment = async (req, res, next) => {
   try {
     const { paypal_order_id, courseId } = req.body;
     const userId = req.user.userId;
 
-    // Find payment record
     const payment = await prisma.payment.findFirst({
       where: {
         providerOrderId: paypal_order_id,
@@ -111,7 +98,6 @@ exports.verifyPayment = async (req, res, next) => {
          return res.status(400).json({ success: false, error: "Payment already captured" });
     }
 
-    // Capture the PayPal Order
     const request = new checkoutNodeJssdk.orders.OrdersCaptureRequest(paypal_order_id);
     request.requestBody({});
     
@@ -128,7 +114,6 @@ exports.verifyPayment = async (req, res, next) => {
 
     const captureId = captureResult.result.purchase_units[0].payments.captures[0].id;
 
-    // Process inside an interactive transaction for full atomicity
     const { enrollment, updatedPayment } = await prisma.$transaction(async (tx) => {
       const newEnrollment = await tx.enrollment.create({
         data: {
@@ -142,7 +127,7 @@ exports.verifyPayment = async (req, res, next) => {
         where: { id: payment.id },
         data: {
           status: "SUCCESS",
-          providerPaymentId: captureId, // Save the capture ID
+          providerPaymentId: captureId,
           enrollmentId: newEnrollment.id,
         },
       });
@@ -156,10 +141,7 @@ exports.verifyPayment = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/payments/my
- * List user's payment history
- */
+
 exports.getMyPayments = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -178,10 +160,6 @@ exports.getMyPayments = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/payments/status/:courseId
- * Get current payment status for a course (for the logged-in user)
- */
 exports.getPaymentStatus = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -198,10 +176,6 @@ exports.getPaymentStatus = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/payments/cancel
- * Cancel a PENDING payment
- */
 exports.cancelPayment = async (req, res, next) => {
   try {
     const { paymentId } = req.body;
@@ -230,10 +204,6 @@ exports.cancelPayment = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/payments/admin/all
- * Admin: list all payments across all users
- */
 exports.getAllPayments = async (req, res, next) => {
   try {
     const { status, userId: filterUserId, courseId } = req.query;

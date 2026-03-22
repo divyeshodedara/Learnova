@@ -44,20 +44,16 @@ export default function UsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("ALL");
 
-  /* create / edit dialog */
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", role: "INSTRUCTOR", password: "" });
   const [saving, setSaving] = useState(false);
 
-  /* temp password dialog */
   const [tempPassword, setTempPassword] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  /* deactivate confirm */
   const [deactivateTarget, setDeactivateTarget] = useState(null);
 
-  /* ─── fetch ─── */
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -75,7 +71,6 @@ export default function UsersPage() {
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
-  /* ─── open dialogs ─── */
   const openCreate = () => {
     setEditing(null);
     setForm({ firstName: "", lastName: "", email: "", role: "INSTRUCTOR", password: "" });
@@ -93,7 +88,6 @@ export default function UsersPage() {
     setDialogOpen(true);
   };
 
-  /* ─── save ─── */
   const handleSave = async () => {
     if (!editing && (!form.firstName.trim() || !form.email.trim())) {
       toast.error("First name and email are required");
@@ -136,7 +130,6 @@ export default function UsersPage() {
     }
   };
 
-  /* ─── deactivate ─── */
   const handleDeactivate = async () => {
     try {
       await deleteUser(deactivateTarget.id);
@@ -150,7 +143,6 @@ export default function UsersPage() {
     }
   };
 
-  /* ─── toggle active ─── */
   const toggleActive = async (u) => {
     try {
       await updateUser(u.id, { isActive: !u.isActive });
@@ -166,7 +158,6 @@ export default function UsersPage() {
 
   return (
     <div className="space-y-6">
-      {/* header */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Users</h1>
@@ -179,7 +170,6 @@ export default function UsersPage() {
 
       <Separator />
 
-      {/* filters */}
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -196,7 +186,6 @@ export default function UsersPage() {
         </Select>
       </div>
 
-      {/* table */}
       <div className="rounded-lg border">
         <Table>
           <TableHeader>
@@ -269,7 +258,6 @@ export default function UsersPage() {
         </Table>
       </div>
 
-      {/* ─── Create / Edit Dialog ─── */}
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
@@ -320,7 +308,6 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ─── Temp Password Dialog ─── */}
       <Dialog open={!!tempPassword} onOpenChange={() => setTempPassword(null)}>
         <DialogContent className="max-w-sm">
           <DialogHeader>
@@ -347,7 +334,6 @@ export default function UsersPage() {
         </DialogContent>
       </Dialog>
 
-      {/* ─── Deactivate Confirm ─── */}
       <AlertDialog open={!!deactivateTarget} onOpenChange={() => setDeactivateTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

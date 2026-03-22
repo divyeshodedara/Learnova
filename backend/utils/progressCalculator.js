@@ -1,9 +1,5 @@
 const prisma = require("../lib/prisma");
 
-/**
- * Calculates and updates completion percent for an enrollment
- * @param {string} enrollmentId
- */
 const calculateProgress = async (enrollmentId) => {
   try {
     const enrollment = await prisma.enrollment.findUnique({

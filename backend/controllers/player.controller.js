@@ -2,10 +2,6 @@ const prisma = require("../lib/prisma");
 const { calculateProgress } = require("../utils/progressCalculator");
 const { awardPoints } = require("../utils/pointsAwarder");
 
-/**
- * PATCH /api/progress/lesson/:id
- * Mark lesson started / completed
- */
 exports.markLessonProgress = async (req, res, next) => {
   try {
     const { id } = req.params; // lessonId
@@ -17,7 +13,6 @@ exports.markLessonProgress = async (req, res, next) => {
       return res.status(404).json({ success: false, error: "Lesson not found" });
     }
 
-    // Verify enrollment
     let targetEnrollmentId = enrollmentId;
     if (!targetEnrollmentId) {
       const enrollment = await prisma.enrollment.findUnique({
@@ -41,7 +36,7 @@ exports.markLessonProgress = async (req, res, next) => {
     if (dataToUpdate.isCompleted) {
       dataToUpdate.completedAt = new Date();
     } else {
-      dataToUpdate.startedAt = new Date(); // Only sets if not already set due to default/upsert
+      dataToUpdate.startedAt = new Date();
     }
 
     const progress = await prisma.lessonProgress.upsert({
@@ -71,10 +66,6 @@ exports.markLessonProgress = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/player/:courseId/:lessonId
- * Load lesson details for player, validating enrollment
- */
 exports.getLessonForPlayer = async (req, res, next) => {
   try {
     const { courseId, lessonId } = req.params;
@@ -85,6 +76,32 @@ exports.getLessonForPlayer = async (req, res, next) => {
     });
     if (!enrollment) {
       return res.status(403).json({ success: false, error: "Not enrolled in this course" });
+    }
+
+    const course = await prisma.course.findUnique({ where: { id: courseId } });
+    if (!course) {
+      return res.status(404).json({ success: false, error: "Course not found" });
+    }
+
+    if (course.accessRule === "ON_INVITATION") {
+      const invitation = await prisma.invitation.findFirst({
+        where: {
+          courseId,
+          OR: [{ email: req.user.email }, { invitedUserId: userId }],
+        },
+      });
+      if (!invitation) {
+        return res.status(403).json({ success: false, error: "This course requires an invitation. You are not in the attendees list." });
+      }
+    }
+
+    if (course.accessRule === "ON_PAYMENT") {
+      const payment = await prisma.payment.findFirst({
+        where: { userId, courseId, status: "SUCCESS" },
+      });
+      if (!payment) {
+        return res.status(403).json({ success: false, error: "Payment required to access this course." });
+      }
     }
 
     const lesson = await prisma.lesson.findUnique({
@@ -121,10 +138,6 @@ exports.getLessonForPlayer = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/quizzes/:id/attempt
- * Start a new quiz attempt
- */
 exports.startQuizAttempt = async (req, res, next) => {
   try {
     const { id } = req.params; // quizId
@@ -158,10 +171,6 @@ exports.startQuizAttempt = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/attempts/:id/answer
- * Submit an answer for one question in an attempt
- */
 exports.submitQuizAnswer = async (req, res, next) => {
   try {
     const { id } = req.params; // attemptId
@@ -211,10 +220,6 @@ exports.submitQuizAnswer = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/attempts/:id/complete
- * Complete attempt, calculate points + badge
- */
 exports.completeQuizAttempt = async (req, res, next) => {
   try {
     const { id } = req.params; // attemptId
@@ -252,7 +257,6 @@ exports.completeQuizAttempt = async (req, res, next) => {
       },
     });
 
-    // Award points scaled by score percentage
     await awardPoints(userId, attempt.quizId, attempt.id, attempt.attemptNumber, scorePercent);
 
     res.json({ success: true, data: completedAttempt });

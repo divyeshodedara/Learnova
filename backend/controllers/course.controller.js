@@ -2,10 +2,6 @@ const prisma = require("../lib/prisma");
 const slugify = require("../utils/slugify");
 const { z } = require("zod");
 
-// Zod schemas for manual validation within controller, 
-// though we also have a validation middleware, we'll parse here for simplicity 
-// or one can use middleware. Let's do it manually to return clear errors.
-
 const createCourseSchema = z.object({
   title: z.string().min(3, "Title must be at least 3 characters"),
   description: z.string().optional(),
@@ -14,7 +10,7 @@ const createCourseSchema = z.object({
   visibility: z.enum(["EVERYONE", "SIGNED_IN"]).optional(),
   accessRule: z.enum(["OPEN", "ON_INVITATION", "ON_PAYMENT"]).optional(),
   price: z.number().nonnegative().optional(),
-  tags: z.array(z.string()).optional(), // Array of Tag IDs
+  tags: z.array(z.string()).optional(),
 });
 
 const updateCourseSchema = createCourseSchema.partial();
@@ -33,7 +29,6 @@ exports.createCourse = async (req, res) => {
     let slug = baseSlug;
     let count = 1;
     
-    //Ensure unique slug
     while (await prisma.course.findUnique({ where: { slug } })) {
       slug = `${baseSlug}-${count}`;
       count++;
@@ -129,13 +124,11 @@ exports.updateCourse = async (req, res) => {
 
     const data = parsed.data;
 
-    // Check if course exists
     const existing = await prisma.course.findUnique({ where: { id } });
     if (!existing) {
       return res.status(404).json({ success: false, error: "Course not found" });
     }
 
-    // if tags are provided, we should ideally replace existing ones.
     let tagsUpdate = undefined;
     if (req.body.tags !== undefined) {
       tagsUpdate = {
@@ -213,8 +206,6 @@ exports.togglePublishCourse = async (req, res) => {
 exports.deleteCourse = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    // Check if course exists
     const course = await prisma.course.findUnique({ where: { id } });
     if (!course) {
        return res.status(404).json({ success: false, error: "Course not found" });

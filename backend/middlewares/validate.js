@@ -1,7 +1,3 @@
-/**
- * Zod validation middleware factory.
- * Usage: validate(signupSchema)
- */
 const validate = (schema) => (req, res, next) => {
   try {
     const result = schema.safeParse(req.body);
@@ -10,7 +6,6 @@ const validate = (schema) => (req, res, next) => {
       let errorMessages = [];
       let message = "Invalid input";
 
-      // Defensive check: handle cases where zod error structure varies
       if (result.error) {
         if (Array.isArray(result.error.errors)) {
           errorMessages = result.error.errors.map((e) => e.message);
@@ -21,12 +16,10 @@ const validate = (schema) => (req, res, next) => {
             ...Object.values(flattened.fieldErrors).flat(),
           ];
         } else {
-          // Fallback
           errorMessages = [result.error.message || "Validation failed"];
         }
       }
 
-      // Construct a single string message
       if (errorMessages.length > 0) {
         message = errorMessages.join(", ");
       }
@@ -38,7 +31,7 @@ const validate = (schema) => (req, res, next) => {
       });
     }
 
-    req.body = result.data; // use the parsed data
+    req.body = result.data;
     next();
   } catch (err) {
     console.error("Validation Middleware Error:", err);

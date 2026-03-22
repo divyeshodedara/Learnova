@@ -181,7 +181,6 @@ function LearnerDashboard({ user }) {
 
   return (
     <>
-      {/* Badge & Points Banner */}
       <div className={styles.statCard} style={{ marginBottom: "1rem", padding: "1.25rem" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <div style={{

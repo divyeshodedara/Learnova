@@ -63,7 +63,6 @@ export default function AdminPaymentsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           All Payments
@@ -73,7 +72,6 @@ export default function AdminPaymentsPage() {
         </p>
       </div>
 
-      {/* Summary Cards */}
       <div className="grid gap-4 sm:grid-cols-4">
         <div className="rounded-lg border border-border p-4">
           <p className="text-xs font-semibold uppercase text-muted-foreground">Total Revenue</p>
@@ -95,7 +93,6 @@ export default function AdminPaymentsPage() {
         </div>
       </div>
 
-      {/* Filter */}
       <div className="flex items-center gap-3">
         <Filter size={16} className="text-muted-foreground" />
         <select
@@ -113,7 +110,6 @@ export default function AdminPaymentsPage() {
 
       {payments.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-border">
-          {/* Table Header */}
           <div className="hidden border-b border-border bg-muted/50 px-4 py-3 sm:grid sm:grid-cols-7 sm:gap-4">
             <span className="col-span-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               User
@@ -135,7 +131,6 @@ export default function AdminPaymentsPage() {
             </span>
           </div>
 
-          {/* Rows */}
           <div className="divide-y divide-border">
             {payments.map((payment) => (
               <div

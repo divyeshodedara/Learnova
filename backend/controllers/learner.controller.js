@@ -1,9 +1,5 @@
 const prisma = require("../lib/prisma");
 
-/**
- * GET /api/courses/published
- * Browse published courses (respects visibility rules)
- */
 exports.getPublishedCourses = async (req, res, next) => {
   try {
     const userId = req.user ? req.user.userId : null;
@@ -35,10 +31,6 @@ exports.getPublishedCourses = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/courses/:id/detail
- * Course detail page (overview, progress, reviews)
- */
 exports.getCourseDetail = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -70,24 +62,43 @@ exports.getCourseDetail = async (req, res, next) => {
       return res.status(404).json({ success: false, error: "Course not found" });
     }
 
-    // If user is authenticated, find enrollment and progress
+    if (!userId && course.visibility === "SIGNED_IN") {
+      return res.status(403).json({ success: false, error: "Sign in to view this course" });
+    }
+
     let enrollment = null;
+    let hasInvitation = false;
+    let hasPaid = false;
+
     if (userId) {
       enrollment = await prisma.enrollment.findUnique({
         where: { userId_courseId: { userId, courseId: id } },
       });
+
+      if (course.accessRule === "ON_INVITATION") {
+        const invitation = await prisma.invitation.findFirst({
+          where: {
+            courseId: id,
+            OR: [{ email: req.user.email }, { invitedUserId: userId }],
+          },
+        });
+        hasInvitation = !!invitation;
+      }
+
+      if (course.accessRule === "ON_PAYMENT") {
+        const payment = await prisma.payment.findFirst({
+          where: { userId, courseId: id, status: "SUCCESS" },
+        });
+        hasPaid = !!payment;
+      }
     }
 
-    res.json({ success: true, data: { course, enrollment } });
+    res.json({ success: true, data: { course, enrollment, hasInvitation, hasPaid } });
   } catch (error) {
     next(error);
   }
 };
 
-/**
- * POST /api/enrollments
- * Enroll in a course checking access rules
- */
 exports.enrollInCourse = async (req, res, next) => {
   try {
     const { courseId } = req.body;
@@ -98,7 +109,6 @@ exports.enrollInCourse = async (req, res, next) => {
       return res.status(404).json({ success: false, error: "Course not found" });
     }
 
-    // Check existing enrollment
     const existingEnrollment = await prisma.enrollment.findUnique({
       where: { userId_courseId: { userId, courseId } },
     });
@@ -106,27 +116,29 @@ exports.enrollInCourse = async (req, res, next) => {
       return res.status(400).json({ success: false, error: "Already enrolled" });
     }
 
-    // Access checks
     if (course.accessRule === "ON_PAYMENT") {
       return res.status(403).json({ success: false, error: "Payment required. Please create an order first." });
     }
 
     if (course.accessRule === "ON_INVITATION") {
       const invitation = await prisma.invitation.findFirst({
-        where: { courseId, OR: [{ email: req.user.email }, { invitedUserId: userId }] },
+        where: {
+          courseId,
+          OR: [{ email: req.user.email }, { invitedUserId: userId }],
+        },
       });
-      if (!invitation || invitation.acceptedAt) {
-        return res.status(403).json({ success: false, error: "You need a valid invitation to enroll in this course." });
+      if (!invitation) {
+        return res.status(403).json({ success: false, error: "You need an invitation to enroll in this course." });
       }
-      
-      // Consume the invitation
-      await prisma.invitation.update({
-        where: { id: invitation.id },
-        data: { acceptedAt: new Date(), invitedUserId: userId },
-      });
+
+      if (!invitation.acceptedAt) {
+        await prisma.invitation.update({
+          where: { id: invitation.id },
+          data: { acceptedAt: new Date(), invitedUserId: userId },
+        });
+      }
     }
 
-    // Create enrollment for OPEN or ON_INVITATION (where verified)
     const newEnrollment = await prisma.enrollment.create({
       data: {
         userId,
@@ -141,10 +153,6 @@ exports.enrollInCourse = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/enrollments/my
- * My courses page
- */
 exports.getMyEnrollments = async (req, res, next) => {
   try {
     const userId = req.user.userId;
@@ -171,10 +179,6 @@ exports.getMyEnrollments = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/enrollments/:id/progress
- * Get full progress for a specific course enrollment
- */
 exports.getCourseProgress = async (req, res, next) => {
   try {
     const { id } = req.params; // Enrollment ID
@@ -221,10 +225,6 @@ exports.getCourseProgress = async (req, res, next) => {
   }
 };
 
-/**
- * GET /api/courses/:id/reviews
- * List reviews and average rating
- */
 exports.getCourseReviews = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -255,10 +255,6 @@ exports.getCourseReviews = async (req, res, next) => {
   }
 };
 
-/**
- * POST /api/courses/:id/reviews
- * Add review (one per learner per course). Requires enrollment.
- */
 exports.addCourseReview = async (req, res, next) => {
   try {
     const { id } = req.params;
@@ -282,7 +278,6 @@ exports.addCourseReview = async (req, res, next) => {
       return res.status(403).json({ success: false, error: "You must be enrolled to review" });
     }
 
-    // Upsert review (allows user to update their existing review instead of failing)
     const review = await prisma.review.upsert({
       where: {
         courseId_userId: { courseId: id, userId },

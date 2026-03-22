@@ -1,8 +1,6 @@
 const prisma = require("../lib/prisma");
 const cloudinary = require("../lib/cloudinary");
 
-// ─── LESSONS ─────────────────────────────────────────────
-
 exports.getLessons = async (req, res) => {
   try {
     const { id: courseId } = req.params; // from /api/courses/:id/lessons
@@ -51,7 +49,6 @@ exports.addLesson = async (req, res) => {
       allowDownload: allowDownload === 'true' || allowDownload === true,
     };
 
-    // Only set optional fields if they have actual values
     if (description) data.description = description;
     if (videoUrl) data.videoUrl = videoUrl;
     if (duration) data.duration = parseInt(duration);
@@ -131,9 +128,6 @@ exports.deleteLesson = async (req, res) => {
     res.status(500).json({ success: false, error: "Failed to delete lesson" });
   }
 };
-
-
-// ─── ATTACHMENTS ─────────────────────────────────────────
 
 exports.addAttachment = async (req, res) => {
   try {

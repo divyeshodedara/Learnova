@@ -10,7 +10,6 @@ const {
 
 const router = express.Router();
 
-// Route-level middleware to enforce authentication and administrator authorization
 router.use(authenticate);
 router.use(authorize("ADMIN"));
 

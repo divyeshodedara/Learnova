@@ -49,7 +49,6 @@ export default function PaymentsPage() {
 
   return (
     <div className="space-y-8">
-      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight text-foreground">
           Payment History
@@ -61,7 +60,6 @@ export default function PaymentsPage() {
 
       {payments.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-border">
-          {/* Table Header */}
           <div className="hidden border-b border-border bg-muted/50 px-4 py-3 sm:grid sm:grid-cols-6 sm:gap-4">
             <span className="col-span-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
               Course
@@ -80,7 +78,6 @@ export default function PaymentsPage() {
             </span>
           </div>
 
-          {/* Table Rows */}
           <div className="divide-y divide-border">
             {payments.map((payment) => (
               <div
@@ -123,7 +120,6 @@ export default function PaymentsPage() {
           </div>
         </div>
       ) : (
-        /* Empty State */
         <div className="flex flex-col items-center justify-center rounded-lg border border-dashed border-border py-20">
           <Receipt size={48} className="text-muted-foreground/40" />
           <p className="mt-4 text-lg font-medium text-foreground">
