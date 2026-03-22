@@ -16,7 +16,7 @@ import {
 import { toast } from "sonner";
 import { getLessons, createLesson, updateLesson, deleteLesson, addAttachment, deleteAttachment } from "../../api/lessons";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -252,10 +252,7 @@ export default function LessonsTab({ courseId }) {
                 <Input value={lessonForm.responsibleName} onChange={(e) => setLessonForm((f) => ({ ...f, responsibleName: e.target.value }))} />
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={lessonForm.allowDownload} onCheckedChange={(v) => setLessonForm((f) => ({ ...f, allowDownload: v }))} />
-              <Label>Allow Download</Label>
-            </div>
+
             <div className="space-y-1.5">
               <Label>File</Label>
               <Input type="file" onChange={(e) => setLessonForm((f) => ({ ...f, file: e.target.files?.[0] || null }))} />

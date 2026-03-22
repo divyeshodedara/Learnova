@@ -3,11 +3,9 @@ import { Send } from "lucide-react";
 import { toast } from "sonner";
 import { getInvitations, sendInvitation } from "../../api/courses";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 export default function InvitationsTab({ courseId }) {
   const [invitations, setInvitations] = useState([]);
@@ -21,7 +19,9 @@ export default function InvitationsTab({ courseId }) {
     } catch {}
   }, [courseId]);
 
-  useEffect(() => { fetchInvitations(); }, [fetchInvitations]);
+  useEffect(() => {
+    fetchInvitations();
+  }, [fetchInvitations]);
 
   const handleSendInvite = async () => {
     if (!invEmail.trim()) return;
@@ -31,8 +31,11 @@ export default function InvitationsTab({ courseId }) {
       toast.success("Invitation sent");
       setInvEmail("");
       fetchInvitations();
-    } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
-    finally { setInvSending(false); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    } finally {
+      setInvSending(false);
+    }
   };
 
   return (

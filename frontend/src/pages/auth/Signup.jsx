@@ -1,17 +1,9 @@
 import { useState, useMemo } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import {
-  User,
-  Mail,
-  Lock,
-  Loader2,
-  ArrowRight,
-  Eye,
-  EyeOff,
-} from "lucide-react";
+import { User, Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { signupUser } from "../../api/auth";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import { ModeToggle } from "../../components/mode-toggle";
 import { showSuccess } from "@/lib/toast";
 import styles from "./auth.module.css";
@@ -40,10 +32,7 @@ export default function Signup() {
     password: "",
   });
 
-  const strength = useMemo(
-    () => getPasswordStrength(formData.password),
-    [formData.password]
-  );
+  const strength = useMemo(() => getPasswordStrength(formData.password), [formData.password]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -59,11 +48,7 @@ export default function Signup() {
       showSuccess("Account created! Please sign in.");
       navigate("/login");
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Something went wrong"
-      );
+      setError(err.response?.data?.message || err.response?.data?.error || "Something went wrong");
     } finally {
       setLoading(false);
     }
@@ -81,9 +66,7 @@ export default function Signup() {
               <img src="/logo.svg" alt="Learnova" className="dark:invert" />
             </div>
             <h1 className={styles.authTitle}>Create an account</h1>
-            <p className={styles.authSubtitle}>
-              Start your learning journey today
-            </p>
+            <p className={styles.authSubtitle}>Start your learning journey today</p>
           </div>
           <div className={styles.authBody}>
             <form onSubmit={handleSubmit} className={styles.authForm}>
@@ -159,11 +142,7 @@ export default function Signup() {
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
                 {formData.password && (
@@ -183,12 +162,7 @@ export default function Signup() {
                 )}
               </div>
               {error && <p className={styles.errorMessage}>{error}</p>}
-              <Button
-                id="signup-submit"
-                className={styles.submitButton + " w-full"}
-                type="submit"
-                disabled={loading}
-              >
+              <Button id="signup-submit" className={styles.submitButton + " w-full"} type="submit" disabled={loading}>
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

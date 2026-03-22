@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Mail, Lock, Loader2, ArrowRight, Eye, EyeOff } from "lucide-react";
 import { loginUser } from "../../api/auth";
-import { Button } from "../../components/ui/Button";
-import { Input } from "../../components/ui/Input";
+import { Button } from "../../components/ui/button";
+import { Input } from "../../components/ui/input";
 import { ModeToggle } from "../../components/mode-toggle";
 import styles from "./auth.module.css";
 
@@ -39,11 +39,7 @@ export default function Login() {
       localStorage.setItem("user", JSON.stringify(response.data.user));
       window.location.href = "/dashboard";
     } catch (err) {
-      setError(
-        err.response?.data?.message ||
-          err.response?.data?.error ||
-          "Invalid credentials"
-      );
+      setError(err.response?.data?.message || err.response?.data?.error || "Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -61,9 +57,7 @@ export default function Login() {
               <img src="/logo.svg" alt="Learnova" className="dark:invert" />
             </div>
             <h1 className={styles.authTitle}>Welcome back</h1>
-            <p className={styles.authSubtitle}>
-              Sign in to continue your learning journey
-            </p>
+            <p className={styles.authSubtitle}>Sign in to continue your learning journey</p>
           </div>
           <div className={styles.authBody}>
             <form onSubmit={handleSubmit} className={styles.authForm}>
@@ -105,21 +99,12 @@ export default function Login() {
                     onClick={() => setShowPassword(!showPassword)}
                     tabIndex={-1}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" />
-                    ) : (
-                      <Eye className="h-4 w-4" />
-                    )}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
               {error && <p className={styles.errorMessage}>{error}</p>}
-              <Button
-                id="login-submit"
-                className={styles.submitButton + " w-full"}
-                type="submit"
-                disabled={loading}
-              >
+              <Button id="login-submit" className={styles.submitButton + " w-full"} type="submit" disabled={loading}>
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (

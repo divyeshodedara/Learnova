@@ -1,24 +1,37 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  Plus,
-  Pencil,
-  Trash2,
-  ChevronDown,
-  ChevronRight,
-  HelpCircle,
-  Trophy,
-} from "lucide-react";
+import { Plus, Pencil, Trash2, ChevronDown, ChevronRight, HelpCircle, Trophy } from "lucide-react";
 import { toast } from "sonner";
-import { getQuizzes, createQuiz, updateQuiz, deleteQuiz, addQuestion, deleteQuestion, addOption, deleteOption, setRewards } from "../../api/quiz";
+import {
+  getQuizzes,
+  createQuiz,
+  updateQuiz,
+  deleteQuiz,
+  addQuestion,
+  deleteQuestion,
+  addOption,
+  deleteOption,
+  setRewards,
+} from "../../api/quiz";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
 export default function QuizzesTab({ courseId }) {
@@ -51,7 +64,9 @@ export default function QuizzesTab({ courseId }) {
     } catch {}
   }, [courseId]);
 
-  useEffect(() => { fetchQuizzes(); }, [fetchQuizzes]);
+  useEffect(() => {
+    fetchQuizzes();
+  }, [fetchQuizzes]);
 
   const openAddQuiz = () => {
     setEditingQuiz(null);
@@ -66,7 +81,10 @@ export default function QuizzesTab({ courseId }) {
   };
 
   const saveQuiz = async () => {
-    if (!quizForm.title.trim()) { toast.error("Title is required"); return; }
+    if (!quizForm.title.trim()) {
+      toast.error("Title is required");
+      return;
+    }
     setQuizSaving(true);
     try {
       if (editingQuiz) {
@@ -80,7 +98,9 @@ export default function QuizzesTab({ courseId }) {
       fetchQuizzes();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed");
-    } finally { setQuizSaving(false); }
+    } finally {
+      setQuizSaving(false);
+    }
   };
 
   const submitQuestion = async (quizId) => {
@@ -91,7 +111,9 @@ export default function QuizzesTab({ courseId }) {
       setAddingQFor(null);
       setQForm({ text: "", order: 1 });
       fetchQuizzes();
-    } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
   };
 
   const submitOption = async (questionId) => {
@@ -102,16 +124,20 @@ export default function QuizzesTab({ courseId }) {
       setAddingOptFor(null);
       setOptForm({ text: "", isCorrect: false, order: 1 });
       fetchQuizzes();
-    } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
   };
 
   const openRewards = (quiz) => {
     setRewardsQuiz(quiz);
     const existing = quiz.rewards || [];
-    setRewardRows([1, 2, 3].map((n) => {
-      const found = existing.find((r) => r.attemptNumber === n);
-      return { attemptNumber: n, points: found?.points || 0 };
-    }));
+    setRewardRows(
+      [1, 2, 3].map((n) => {
+        const found = existing.find((r) => r.attemptNumber === n);
+        return { attemptNumber: n, points: found?.points || 0 };
+      }),
+    );
   };
 
   const saveRewards = async () => {
@@ -120,18 +146,26 @@ export default function QuizzesTab({ courseId }) {
       toast.success("Rewards saved");
       setRewardsQuiz(null);
       fetchQuizzes();
-    } catch (err) { toast.error(err.response?.data?.message || "Failed"); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed");
+    }
   };
 
   const handleDelete = async () => {
     const { type: dtype, id: did } = deleteTarget;
     try {
-      if (dtype === "quiz") { await deleteQuiz(did); }
-      else if (dtype === "question") { await deleteQuestion(did); }
-      else if (dtype === "option") { await deleteOption(did); }
+      if (dtype === "quiz") {
+        await deleteQuiz(did);
+      } else if (dtype === "question") {
+        await deleteQuestion(did);
+      } else if (dtype === "option") {
+        await deleteOption(did);
+      }
       toast.success("Deleted");
       fetchQuizzes();
-    } catch (err) { toast.error(err.response?.data?.message || "Delete failed"); }
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Delete failed");
+    }
     setDeleteTarget({ type: null, id: null, label: "" });
   };
 
@@ -165,7 +199,11 @@ export default function QuizzesTab({ courseId }) {
                   <Button variant="ghost" size="icon-xs" onClick={() => openEditQuiz(q)}>
                     <Pencil className="h-3 w-3" />
                   </Button>
-                  <Button variant="ghost" size="icon-xs" onClick={() => setDeleteTarget({ type: "quiz", id: q.id, label: q.title })}>
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    onClick={() => setDeleteTarget({ type: "quiz", id: q.id, label: q.title })}
+                  >
                     <Trash2 className="h-3 w-3" />
                   </Button>
                 </div>
@@ -176,33 +214,74 @@ export default function QuizzesTab({ courseId }) {
                   {(q.questions || []).map((question, qi) => (
                     <div key={question.id} className="rounded-md border bg-background p-3 space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium flex-1">Q{qi + 1}. {question.text}</span>
-                        <Button variant="ghost" size="icon-xs" onClick={() => setDeleteTarget({ type: "question", id: question.id, label: question.text })}>
+                        <span className="text-sm font-medium flex-1">
+                          Q{qi + 1}. {question.text}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon-xs"
+                          onClick={() => setDeleteTarget({ type: "question", id: question.id, label: question.text })}
+                        >
                           <Trash2 className="h-3 w-3" />
                         </Button>
                       </div>
                       <div className="pl-4 space-y-1">
                         {(question.options || []).map((opt) => (
                           <div key={opt.id} className="flex items-center gap-2 text-sm">
-                            <span className={`h-2 w-2 rounded-full ${opt.isCorrect ? "bg-foreground" : "bg-muted-foreground/30"}`} />
+                            <span
+                              className={`h-2 w-2 rounded-full ${opt.isCorrect ? "bg-foreground" : "bg-muted-foreground/30"}`}
+                            />
                             <span className={opt.isCorrect ? "font-medium" : "text-muted-foreground"}>{opt.text}</span>
-                            <Button variant="ghost" size="icon-xs" className="ml-auto" onClick={() => setDeleteTarget({ type: "option", id: opt.id, label: opt.text })}>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="ml-auto"
+                              onClick={() => setDeleteTarget({ type: "option", id: opt.id, label: opt.text })}
+                            >
                               <Trash2 className="h-2.5 w-2.5" />
                             </Button>
                           </div>
                         ))}
                         {addingOptFor === question.id ? (
                           <div className="flex gap-2 items-center mt-1">
-                            <Input value={optForm.text} onChange={(e) => setOptForm((f) => ({ ...f, text: e.target.value }))} placeholder="Option text" className="h-7 text-xs flex-1" />
-                            <Input type="number" value={optForm.order} onChange={(e) => setOptForm((f) => ({ ...f, order: Number(e.target.value) }))} className="h-7 text-xs w-16" placeholder="#" />
+                            <Input
+                              value={optForm.text}
+                              onChange={(e) => setOptForm((f) => ({ ...f, text: e.target.value }))}
+                              placeholder="Option text"
+                              className="h-7 text-xs flex-1"
+                            />
+                            <Input
+                              type="number"
+                              value={optForm.order}
+                              onChange={(e) => setOptForm((f) => ({ ...f, order: Number(e.target.value) }))}
+                              className="h-7 text-xs w-16"
+                              placeholder="#"
+                            />
                             <label className="flex items-center gap-1 text-xs">
-                              <input type="checkbox" checked={optForm.isCorrect} onChange={(e) => setOptForm((f) => ({ ...f, isCorrect: e.target.checked }))} /> Correct
+                              <input
+                                type="checkbox"
+                                checked={optForm.isCorrect}
+                                onChange={(e) => setOptForm((f) => ({ ...f, isCorrect: e.target.checked }))}
+                              />{" "}
+                              Correct
                             </label>
-                            <Button size="xs" onClick={() => submitOption(question.id)}>Add</Button>
-                            <Button size="xs" variant="ghost" onClick={() => setAddingOptFor(null)}>✕</Button>
+                            <Button size="xs" onClick={() => submitOption(question.id)}>
+                              Add
+                            </Button>
+                            <Button size="xs" variant="ghost" onClick={() => setAddingOptFor(null)}>
+                              ✕
+                            </Button>
                           </div>
                         ) : (
-                          <Button variant="ghost" size="xs" className="mt-1 text-xs" onClick={() => { setAddingOptFor(question.id); setOptForm({ text: "", isCorrect: false, order: (question.options?.length || 0) + 1 }); }}>
+                          <Button
+                            variant="ghost"
+                            size="xs"
+                            className="mt-1 text-xs"
+                            onClick={() => {
+                              setAddingOptFor(question.id);
+                              setOptForm({ text: "", isCorrect: false, order: (question.options?.length || 0) + 1 });
+                            }}
+                          >
                             <Plus className="h-3 w-3 mr-1" /> Add Option
                           </Button>
                         )}
@@ -212,13 +291,35 @@ export default function QuizzesTab({ courseId }) {
 
                   {addingQFor === q.id ? (
                     <div className="flex gap-2 items-center">
-                      <Input value={qForm.text} onChange={(e) => setQForm((f) => ({ ...f, text: e.target.value }))} placeholder="Question text" className="h-8 text-sm flex-1" />
-                      <Input type="number" value={qForm.order} onChange={(e) => setQForm((f) => ({ ...f, order: Number(e.target.value) }))} className="h-8 text-sm w-16" placeholder="#" />
-                      <Button size="sm" onClick={() => submitQuestion(q.id)}>Add</Button>
-                      <Button size="sm" variant="ghost" onClick={() => setAddingQFor(null)}>✕</Button>
+                      <Input
+                        value={qForm.text}
+                        onChange={(e) => setQForm((f) => ({ ...f, text: e.target.value }))}
+                        placeholder="Question text"
+                        className="h-8 text-sm flex-1"
+                      />
+                      <Input
+                        type="number"
+                        value={qForm.order}
+                        onChange={(e) => setQForm((f) => ({ ...f, order: Number(e.target.value) }))}
+                        className="h-8 text-sm w-16"
+                        placeholder="#"
+                      />
+                      <Button size="sm" onClick={() => submitQuestion(q.id)}>
+                        Add
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => setAddingQFor(null)}>
+                        ✕
+                      </Button>
                     </div>
                   ) : (
-                    <Button variant="outline" size="sm" onClick={() => { setAddingQFor(q.id); setQForm({ text: "", order: (q.questions?.length || 0) + 1 }); }}>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setAddingQFor(q.id);
+                        setQForm({ text: "", order: (q.questions?.length || 0) + 1 });
+                      }}
+                    >
                       <Plus className="h-3.5 w-3.5 mr-1" /> Add Question
                     </Button>
                   )}
@@ -242,12 +343,21 @@ export default function QuizzesTab({ courseId }) {
             </div>
             <div className="space-y-1.5">
               <Label>Description</Label>
-              <textarea className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring" rows={2} value={quizForm.description} onChange={(e) => setQuizForm((f) => ({ ...f, description: e.target.value }))} />
+              <textarea
+                className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                rows={2}
+                value={quizForm.description}
+                onChange={(e) => setQuizForm((f) => ({ ...f, description: e.target.value }))}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setQuizDialog(false)} disabled={quizSaving}>Cancel</Button>
-            <Button onClick={saveQuiz} disabled={quizSaving}>{quizSaving ? "Saving..." : editingQuiz ? "Update" : "Create"}</Button>
+            <Button variant="outline" onClick={() => setQuizDialog(false)} disabled={quizSaving}>
+              Cancel
+            </Button>
+            <Button onClick={saveQuiz} disabled={quizSaving}>
+              {quizSaving ? "Saving..." : editingQuiz ? "Update" : "Create"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -268,7 +378,7 @@ export default function QuizzesTab({ courseId }) {
                   value={r.points}
                   onChange={(e) => {
                     const v = Number(e.target.value);
-                    setRewardRows((rows) => rows.map((rr, ri) => ri === i ? { ...rr, points: v } : rr));
+                    setRewardRows((rows) => rows.map((rr, ri) => (ri === i ? { ...rr, points: v } : rr)));
                   }}
                   className="w-24"
                 />
@@ -277,7 +387,9 @@ export default function QuizzesTab({ courseId }) {
             ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRewardsQuiz(null)}>Cancel</Button>
+            <Button variant="outline" onClick={() => setRewardsQuiz(null)}>
+              Cancel
+            </Button>
             <Button onClick={saveRewards}>Save Rewards</Button>
           </DialogFooter>
         </DialogContent>

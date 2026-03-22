@@ -1,29 +1,16 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  Users,
-  TrendingUp,
-  Clock,
-  CheckCircle2,
-  Award,
-  Target,
-  ChevronDown,
-  ChevronUp,
-} from "lucide-react";
+import { Users, TrendingUp, Clock, CheckCircle2, Award, Target, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { getOverview, getUserProgress } from "../../api/reporting";
 import { getCourses } from "../../api/courses";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const fmtTime = (seconds) => {
   if (!seconds && seconds !== 0) return "-";
@@ -89,7 +76,9 @@ export default function ReportingPage() {
     }
   }, [courseFilter, statusFilter]);
 
-  useEffect(() => { fetchProgress(); }, [fetchProgress]);
+  useEffect(() => {
+    fetchProgress();
+  }, [fetchProgress]);
 
   return (
     <div className="space-y-6">
@@ -106,7 +95,10 @@ export default function ReportingPage() {
               <span className="text-sm">{label}</span>
             </div>
             {overview ? (
-              <p className="text-2xl font-bold">{overview[key] ?? 0}{suffix || ""}</p>
+              <p className="text-2xl font-bold">
+                {overview[key] ?? 0}
+                {suffix || ""}
+              </p>
             ) : (
               <Skeleton className="h-8 w-16" />
             )}
@@ -118,16 +110,22 @@ export default function ReportingPage() {
 
       <div className="flex flex-wrap items-center gap-3">
         <Select value={courseFilter} onValueChange={setCourseFilter}>
-          <SelectTrigger className="w-[220px]"><SelectValue placeholder="All Courses" /></SelectTrigger>
+          <SelectTrigger className="w-[220px]">
+            <SelectValue placeholder="All Courses" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Courses</SelectItem>
             {courses.map((c) => (
-              <SelectItem key={c.id} value={String(c.id)}>{c.title}</SelectItem>
+              <SelectItem key={c.id} value={String(c.id)}>
+                {c.title}
+              </SelectItem>
             ))}
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue placeholder="All Status" /></SelectTrigger>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Status</SelectItem>
             <SelectItem value="YET_TO_START">Yet to Start</SelectItem>
@@ -160,7 +158,9 @@ export default function ReportingPage() {
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   {Array.from({ length: 12 }).map((_, j) => (
-                    <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -179,17 +179,21 @@ export default function ReportingPage() {
 
                 return (
                   <>
-                    <TableRow key={r.id || i} className="cursor-pointer" onClick={() => setExpandedRow(isExpanded ? null : r.id)}>
+                    <TableRow
+                      key={r.id || i}
+                      className="cursor-pointer"
+                      onClick={() => setExpandedRow(isExpanded ? null : r.id)}
+                    >
                       <TableCell className="text-muted-foreground">{i + 1}</TableCell>
                       <TableCell className="font-medium">{r.course?.title || "-"}</TableCell>
                       <TableCell>
-                        {r.user
-                          ? `${r.user.firstName || ""} ${r.user.lastName || ""}`.trim()
-                          : "-"}
+                        {r.user ? `${r.user.firstName || ""} ${r.user.lastName || ""}`.trim() : "-"}
                       </TableCell>
                       <TableCell>
                         {r.user?.badgeLevel ? (
-                          <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${BADGE_COLORS[r.user.badgeLevel] || "bg-gray-200"}`}>
+                          <span
+                            className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold ${BADGE_COLORS[r.user.badgeLevel] || "bg-gray-200"}`}
+                          >
                             <Award className="h-3 w-3" />
                             {r.user.badgeLevel}
                           </span>
@@ -199,7 +203,12 @@ export default function ReportingPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-col">
-                          <span className="font-medium">{r.courseEarnedPoints ?? r.user?.totalPoints ?? 0}{r.courseMaxPoints > 0 && <span className="text-muted-foreground text-xs">/{r.courseMaxPoints}</span>}</span>
+                          <span className="font-medium">
+                            {r.courseEarnedPoints ?? r.user?.totalPoints ?? 0}
+                            {r.courseMaxPoints > 0 && (
+                              <span className="text-muted-foreground text-xs">/{r.courseMaxPoints}</span>
+                            )}
+                          </span>
                           {r.coursePointsPercent != null && r.courseMaxPoints > 0 && (
                             <span className="text-xs text-muted-foreground">{r.coursePointsPercent}%</span>
                           )}
@@ -207,7 +216,9 @@ export default function ReportingPage() {
                       </TableCell>
                       <TableCell>
                         {bestOverall !== null ? (
-                          <span className={`font-semibold ${bestOverall >= 80 ? "text-green-600" : bestOverall >= 50 ? "text-yellow-600" : "text-red-600"}`}>
+                          <span
+                            className={`font-semibold ${bestOverall >= 80 ? "text-green-600" : bestOverall >= 50 ? "text-yellow-600" : "text-red-600"}`}
+                          >
                             {Math.round(bestOverall)}%
                           </span>
                         ) : (
@@ -230,9 +241,7 @@ export default function ReportingPage() {
                       <TableCell>
                         <Badge
                           variant={
-                            r.status === "COMPLETED" ? "default"
-                              : r.status === "IN_PROGRESS" ? "secondary"
-                                : "outline"
+                            r.status === "COMPLETED" ? "default" : r.status === "IN_PROGRESS" ? "secondary" : "outline"
                           }
                         >
                           {r.status?.replace(/_/g, " ") || "-"}
@@ -240,9 +249,8 @@ export default function ReportingPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{fmtDate(r.completedAt)}</TableCell>
                       <TableCell>
-                        {r.quizScores?.length > 0 && (
-                          isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />
-                        )}
+                        {r.quizScores?.length > 0 &&
+                          (isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
                       </TableCell>
                     </TableRow>
                     {isExpanded && r.quizScores?.length > 0 && (
@@ -255,7 +263,16 @@ export default function ReportingPage() {
                                 <div key={qi} className="rounded-md border bg-card p-3 space-y-1">
                                   <p className="text-sm font-medium">{qs.quizTitle}</p>
                                   <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                                    <span>Best Score: {qs.bestScore !== null ? <span className="font-semibold text-foreground">{Math.round(qs.bestScore)}%</span> : "N/A"}</span>
+                                    <span>
+                                      Best Score:{" "}
+                                      {qs.bestScore !== null ? (
+                                        <span className="font-semibold text-foreground">
+                                          {Math.round(qs.bestScore)}%
+                                        </span>
+                                      ) : (
+                                        "N/A"
+                                      )}
+                                    </span>
                                     <span>Attempts: {qs.attempts}</span>
                                     <span>Points: {qs.pointsEarned}</span>
                                   </div>

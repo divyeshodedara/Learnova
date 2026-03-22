@@ -3,7 +3,7 @@ import { X } from "lucide-react";
 import { toast } from "sonner";
 import { getTags, createTag } from "../../api/tags";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,13 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const empty = {
   title: "",
@@ -33,13 +27,7 @@ const empty = {
   tags: [],
 };
 
-export default function CourseFormDialog({
-  open,
-  onOpenChange,
-  editing,
-  onSave,
-  saving,
-}) {
+export default function CourseFormDialog({ open, onOpenChange, editing, onSave, saving }) {
   const [form, setForm] = useState({ ...empty });
   const [allTags, setAllTags] = useState([]);
   const [newTag, setNewTag] = useState("");
@@ -70,9 +58,7 @@ export default function CourseFormDialog({
   const toggleTag = (id) => {
     setForm((f) => ({
       ...f,
-      tags: f.tags.includes(id)
-        ? f.tags.filter((t) => t !== id)
-        : [...f.tags, id],
+      tags: f.tags.includes(id) ? f.tags.filter((t) => t !== id) : [...f.tags, id],
     }));
   };
 
@@ -102,13 +88,9 @@ export default function CourseFormDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            {editing ? "Edit Course" : "Create Course"}
-          </DialogTitle>
+          <DialogTitle>{editing ? "Edit Course" : "Create Course"}</DialogTitle>
           <DialogDescription>
-            {editing
-              ? "Update the course details below."
-              : "Fill in the details to create a new course."}
+            {editing ? "Update the course details below." : "Fill in the details to create a new course."}
           </DialogDescription>
         </DialogHeader>
 
@@ -118,9 +100,7 @@ export default function CourseFormDialog({
             <Input
               id="title"
               value={form.title}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, title: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
               placeholder="Course title"
             />
           </div>
@@ -132,9 +112,7 @@ export default function CourseFormDialog({
               rows={3}
               className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               value={form.description}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, description: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
               placeholder="Full description"
             />
           </div>
@@ -144,9 +122,7 @@ export default function CourseFormDialog({
             <Input
               id="shortDesc"
               value={form.shortDesc}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, shortDesc: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, shortDesc: e.target.value }))}
               placeholder="Brief summary"
             />
           </div>
@@ -154,12 +130,7 @@ export default function CourseFormDialog({
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1.5">
               <Label>Visibility</Label>
-              <Select
-                value={form.visibility}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, visibility: v }))
-                }
-              >
+              <Select value={form.visibility} onValueChange={(v) => setForm((f) => ({ ...f, visibility: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -171,12 +142,7 @@ export default function CourseFormDialog({
             </div>
             <div className="space-y-1.5">
               <Label>Access Rule</Label>
-              <Select
-                value={form.accessRule}
-                onValueChange={(v) =>
-                  setForm((f) => ({ ...f, accessRule: v }))
-                }
-              >
+              <Select value={form.accessRule} onValueChange={(v) => setForm((f) => ({ ...f, accessRule: v }))}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -198,9 +164,7 @@ export default function CourseFormDialog({
                 min="0"
                 step="0.01"
                 value={form.price}
-                onChange={(e) =>
-                  setForm((f) => ({ ...f, price: e.target.value }))
-                }
+                onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
                 placeholder="0.00"
               />
             </div>
@@ -211,14 +175,10 @@ export default function CourseFormDialog({
             <Input
               id="websiteUrl"
               value={form.websiteUrl}
-              onChange={(e) =>
-                setForm((f) => ({ ...f, websiteUrl: e.target.value }))
-              }
+              onChange={(e) => setForm((f) => ({ ...f, websiteUrl: e.target.value }))}
               placeholder="https://..."
             />
-            <p className="text-xs text-muted-foreground">
-              Required to publish the course
-            </p>
+            <p className="text-xs text-muted-foreground">Required to publish the course</p>
           </div>
 
           <div className="space-y-1.5">
@@ -232,9 +192,7 @@ export default function CourseFormDialog({
                   onClick={() => toggleTag(t.id)}
                 >
                   {t.name}
-                  {form.tags.includes(t.id) && (
-                    <X className="ml-1 h-3 w-3" />
-                  )}
+                  {form.tags.includes(t.id) && <X className="ml-1 h-3 w-3" />}
                 </Badge>
               ))}
             </div>
@@ -254,11 +212,7 @@ export default function CourseFormDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={saving}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={saving}>
             Cancel
           </Button>
           <Button onClick={handleSave} disabled={saving}>

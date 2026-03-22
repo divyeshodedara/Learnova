@@ -2,15 +2,9 @@ import { useEffect, useState, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search, Plus, Globe } from "lucide-react";
 import { toast } from "sonner";
-import {
-  getCourses,
-  createCourse,
-  updateCourse,
-  togglePublish,
-  deleteCourse,
-} from "../../api/courses";
+import { getCourses, createCourse, updateCourse, togglePublish, deleteCourse } from "../../api/courses";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
 import {
@@ -31,13 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import CourseTable from "../../components/courses/CourseTable";
 import CourseFormDialog from "../../components/courses/CourseFormDialog";
 
@@ -172,9 +160,7 @@ export default function CoursesPage() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Courses</h1>
-          <p className="text-muted-foreground text-sm">
-            Manage your platform courses
-          </p>
+          <p className="text-muted-foreground text-sm">Manage your platform courses</p>
         </div>
         <Button onClick={openCreate}>
           <Plus className="mr-1.5 h-4 w-4" /> Create Course
@@ -226,9 +212,7 @@ export default function CoursesPage() {
         <DialogContent className="max-w-sm">
           <DialogHeader>
             <DialogTitle>Website URL Required</DialogTitle>
-            <DialogDescription>
-              Enter a website URL before publishing this course.
-            </DialogDescription>
+            <DialogDescription>Enter a website URL before publishing this course.</DialogDescription>
           </DialogHeader>
           <div className="space-y-2 py-2">
             <Label htmlFor="pub-url">Website URL</Label>
@@ -248,16 +232,12 @@ export default function CoursesPage() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog
-        open={!!deleteTarget}
-        onOpenChange={() => setDeleteTarget(null)}
-      >
+      <AlertDialog open={!!deleteTarget} onOpenChange={() => setDeleteTarget(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Course</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deleteTarget?.title}"? This
-              action cannot be undone.
+              Are you sure you want to delete "{deleteTarget?.title}"? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

@@ -1,40 +1,42 @@
 import { useEffect, useState, useCallback } from "react";
-import {
-  Search,
-  Plus,
-  MoreHorizontal,
-  Pencil,
-  UserX,
-  Copy,
-  Check,
-} from "lucide-react";
+import { Search, Plus, MoreHorizontal, Pencil, UserX, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { listUsers, createUser, updateUser, deleteUser } from "../../api/admin";
 import { useAuth } from "../../hooks/useAuth";
 
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/Input";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
-  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-} from "@/components/ui/table";
-import {
-  Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
-  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
-  DropdownMenu, DropdownMenuContent, DropdownMenuItem,
-  DropdownMenuSeparator, DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function UsersPage() {
   const { user: currentUser } = useAuth();
@@ -69,7 +71,9 @@ export default function UsersPage() {
     }
   }, [search, roleFilter]);
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
 
   const openCreate = () => {
     setEditing(null);
@@ -173,10 +177,17 @@ export default function UsersPage() {
       <div className="flex flex-wrap items-center gap-3">
         <div className="relative flex-1 min-w-[200px] max-w-sm">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input placeholder="Search by name or email..." value={search} onChange={(e) => setSearch(e.target.value)} className="pl-8" />
+          <Input
+            placeholder="Search by name or email..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="pl-8"
+          />
         </div>
         <Select value={roleFilter} onValueChange={setRoleFilter}>
-          <SelectTrigger className="w-[160px]"><SelectValue /></SelectTrigger>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
             <SelectItem value="ALL">All Roles</SelectItem>
             <SelectItem value="ADMIN">Admin</SelectItem>
@@ -203,7 +214,9 @@ export default function UsersPage() {
               Array.from({ length: 5 }).map((_, i) => (
                 <TableRow key={i}>
                   {Array.from({ length: 6 }).map((_, j) => (
-                    <TableCell key={j}><Skeleton className="h-4 w-full" /></TableCell>
+                    <TableCell key={j}>
+                      <Skeleton className="h-4 w-full" />
+                    </TableCell>
                   ))}
                 </TableRow>
               ))
@@ -216,12 +229,12 @@ export default function UsersPage() {
             ) : (
               users.map((u) => (
                 <TableRow key={u.id}>
-                  <TableCell className="font-medium">{u.firstName} {u.lastName}</TableCell>
+                  <TableCell className="font-medium">
+                    {u.firstName} {u.lastName}
+                  </TableCell>
                   <TableCell className="text-muted-foreground">{u.email}</TableCell>
                   <TableCell>
-                    <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>
-                      {u.role}
-                    </Badge>
+                    <Badge variant={u.role === "ADMIN" ? "default" : "secondary"}>{u.role}</Badge>
                   </TableCell>
                   <TableCell>
                     <Badge variant={u.isActive !== false ? "outline" : "destructive"}>
@@ -234,7 +247,9 @@ export default function UsersPage() {
                   <TableCell>
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon-sm"><MoreHorizontal className="h-4 w-4" /></Button>
+                        <Button variant="ghost" size="icon-sm">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
                         <DropdownMenuItem onClick={() => openEdit(u)} disabled={isSelf(u)}>
@@ -243,7 +258,9 @@ export default function UsersPage() {
                         <DropdownMenuSeparator />
                         <DropdownMenuItem
                           className="text-destructive"
-                          onClick={() => isSelf(u) ? toast.error("You cannot deactivate yourself") : setDeactivateTarget(u)}
+                          onClick={() =>
+                            isSelf(u) ? toast.error("You cannot deactivate yourself") : setDeactivateTarget(u)
+                          }
                           disabled={isSelf(u)}
                         >
                           <UserX className="mr-2 h-3.5 w-3.5" /> Deactivate
@@ -262,9 +279,7 @@ export default function UsersPage() {
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>{editing ? "Edit User" : "Create User"}</DialogTitle>
-            <DialogDescription>
-              {editing ? "Update user details." : "Add a new admin or instructor."}
-            </DialogDescription>
+            <DialogDescription>{editing ? "Update user details." : "Add a new admin or instructor."}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-2">
             <div className="grid grid-cols-2 gap-4">
@@ -280,14 +295,21 @@ export default function UsersPage() {
             {!editing && (
               <div className="space-y-1.5">
                 <Label>Email *</Label>
-                <Input value={form.email} onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))} type="email" />
+                <Input
+                  value={form.email}
+                  onChange={(e) => setForm((f) => ({ ...f, email: e.target.value }))}
+                  type="email"
+                />
               </div>
             )}
             <div className="space-y-1.5">
               <Label>Role</Label>
               <Select value={form.role} onValueChange={(v) => setForm((f) => ({ ...f, role: v }))}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
                 <SelectContent>
+                  <SelectItem value="LEARNER">Learner</SelectItem>
                   <SelectItem value="ADMIN">Admin</SelectItem>
                   <SelectItem value="INSTRUCTOR">Instructor</SelectItem>
                 </SelectContent>
@@ -296,14 +318,22 @@ export default function UsersPage() {
             {!editing && (
               <div className="space-y-1.5">
                 <Label>Password (optional)</Label>
-                <Input value={form.password} onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))} type="password" />
+                <Input
+                  value={form.password}
+                  onChange={(e) => setForm((f) => ({ ...f, password: e.target.value }))}
+                  type="password"
+                />
                 <p className="text-xs text-muted-foreground">Leave empty to auto-generate a temporary password.</p>
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving}>{saving ? "Saving..." : editing ? "Update" : "Create"}</Button>
+            <Button variant="outline" onClick={() => setDialogOpen(false)} disabled={saving}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={saving}>
+              {saving ? "Saving..." : editing ? "Update" : "Create"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -339,7 +369,8 @@ export default function UsersPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Deactivate User</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to deactivate {deactivateTarget?.firstName} {deactivateTarget?.lastName}? They will no longer be able to log in.
+              Are you sure you want to deactivate {deactivateTarget?.firstName} {deactivateTarget?.lastName}? They will
+              no longer be able to log in.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
