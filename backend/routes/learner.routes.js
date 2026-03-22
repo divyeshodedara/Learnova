@@ -2,9 +2,10 @@ const express = require("express");
 const router = express.Router();
 const learnerController = require("../controllers/learner.controller");
 const authenticate = require("../middlewares/auth");
+const optionalAuth = require("../middlewares/optionalAuth");
 
 router.get("/courses/published", learnerController.getPublishedCourses);
-router.get("/courses/:id/detail", learnerController.getCourseDetail);
+router.get("/courses/:id/detail", optionalAuth, learnerController.getCourseDetail);
 router.get("/courses/:id/reviews", learnerController.getCourseReviews);
 
 // Protected routes

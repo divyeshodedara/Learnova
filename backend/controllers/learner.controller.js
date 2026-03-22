@@ -182,7 +182,20 @@ exports.getCourseProgress = async (req, res, next) => {
       where: { id },
       include: {
         course: {
-          select: { id: true, title: true, _count: { select: { lessons: true } } }
+          select: { 
+            id: true, 
+            title: true, 
+            _count: { select: { lessons: true, quizzes: true } },
+            quizzes: {
+              select: {
+                id: true,
+                attempts: {
+                  where: { userId },
+                  select: { status: true, score: true }
+                }
+              }
+            }
+          }
         },
         lessonProgress: true,
       },

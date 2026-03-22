@@ -12,7 +12,7 @@ const calculateProgress = async (enrollmentId) => {
         course: {
           include: {
             _count: {
-              select: { lessons: true },
+              select: { lessons: true, quizzes: true },
             },
           },
         },
@@ -22,7 +22,10 @@ const calculateProgress = async (enrollmentId) => {
     if (!enrollment) return;
 
     const totalLessons = enrollment.course._count.lessons;
-    if (totalLessons === 0) return;
+    const totalQuizzes = enrollment.course._count.quizzes;
+    const totalItems = totalLessons + totalQuizzes;
+
+    if (totalItems === 0) return;
 
     const completedLessons = await prisma.lessonProgress.count({
       where: {
@@ -31,7 +34,19 @@ const calculateProgress = async (enrollmentId) => {
       },
     });
 
-    const completionPercent = (completedLessons / totalLessons) * 100;
+    const completedQuizzes = await prisma.quiz.count({
+      where: {
+        courseId: enrollment.courseId,
+        attempts: {
+          some: {
+            userId: enrollment.userId,
+            status: "COMPLETED",
+          },
+        },
+      },
+    });
+
+    const completionPercent = Math.round(((completedLessons + completedQuizzes) / totalItems) * 100);
     let status = enrollment.status;
 
     if (completionPercent >= 100) {

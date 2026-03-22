@@ -147,6 +147,10 @@ exports.submitQuizAnswer = async (req, res, next) => {
     const { id } = req.params; // attemptId
     const userId = req.user.userId;
     const { questionId, selectedOptionId } = req.body;
+    
+    if (!selectedOptionId) {
+      return res.status(400).json({ success: false, error: "selectedOptionId is required" });
+    }
 
     const attempt = await prisma.quizAttempt.findUnique({ where: { id } });
     if (!attempt || attempt.userId !== userId) {
@@ -235,6 +239,14 @@ exports.completeQuizAttempt = async (req, res, next) => {
     // The specification implies we give rewards on completion based on attempt number.
     // We will grant rewards regardless of score.
     await awardPoints(userId, attempt.quizId, attempt.id, attempt.attemptNumber);
+
+    // Update course progress
+    const enrollment = await prisma.enrollment.findUnique({
+      where: { userId_courseId: { userId, courseId: attempt.quiz.courseId } },
+    });
+    if (enrollment) {
+      await calculateProgress(enrollment.id);
+    }
 
     res.json({ success: true, data: completedAttempt });
   } catch (error) {
